@@ -152,13 +152,15 @@ A full cycle within the depth of one role — an honest format for the demo: it 
 - [ ] List of accepted Claude Code courses/certifications (confirm with organizers): \_\_\_
 - [ ] Company security/access constraints (what may be connected to AI): \_\_\_
 - [ ] Questionnaire date and link: \_\_\_
-- [x] Pilot repository: **`flowforge-pilot` (GitHub, public — on the Free plan branch protection is available only for public repos; safe given the .env policy + deny rules)**. Jira project: FF (site URL pending).
+- [x] Pilot repository: **`flowforge-pilot` (GitHub, public — on the Free plan branch protection is available only for public repos; safe given the .env policy + deny rules)**. Jira project: FF.
 - [ ] Reusable deliverable: extract `flowforge-template` repo (placeholders + SETUP.md) once the pipeline is stable (~Jul 14–27); enable "Template repository" on GitHub; add the link to the submission summary. Day-one rule: project-agnostic logic lives in `.claude/`, project-specific values live only in CLAUDE.md.
 
 ## 9. Progress log (append at the top; see MAINTENANCE RULE in the header)
 
-- 2026-06-10 — **Jira content format convention adopted** (hard rule 8): all Jira writes (descriptions, comments) must use `contentFormat: "adf"` (Atlassian Document Format JSON), never raw Markdown. Fixes checkboxes and links in FF-2..FF-7 descriptions; prevents `/spec` comments from repeating the issue.
-- 2026-06-10 — **Backlog created:** FF-1..FF-7 (18 SP, full landing page) generated PM-style from Figma frames and created in Jira via Atlassian MCP; FF-5 split from FF-4 at review; ticket source file = Landing page (fileKey `nwCQ1hdons94beObATiRv7`). Figma URLs filled in §8.
+- 2026-06-11 (v3.29) — Token map heading aligned with the updated GUIDE Prompt B: parenthetical changed from "appends the table here" to "fills this table after an approval checkpoint and applies theme.extend to tailwind.config via a PR" (Prompt B now fills the EXISTING empty table via a chore/token-baseline branch → PR to dev, removing the duplicate-subsection risk the old wording invited). Cosmetic; no behavior change.
+- 2026-06-11 (v3.28) — **Incremental token map maintenance adopted** (s.11, new "Token map maintenance (incremental)" subsection after the Design token map table): the map grows via `/spec` only — the analyst proposes role-based semantic tokens (`brand-*`/`surface-*`/`text-*`/`spacing-*`/`radius-*`) with Figma origin and raw value in a "Proposed token additions" spec block, after a mandatory value-normalized dedup check (exact match → reuse; near-match → flag for human canonicalization). On approval, `/build` applies additions to `tailwind.config` `theme.extend` and appends the table rows in the same PR (must never diverge; `/review` verifies map↔config consistency); raw values are forbidden in component code (`/review` flags arbitrary values); each addition is logged in s.9 as part of the ticket's cycle entry.
+- 2026-06-10 (v3.27) — **Jira content format convention adopted** (hard rule 8): all Jira writes (descriptions, comments) must use `contentFormat: "adf"` (Atlassian Document Format JSON), never raw Markdown. Fixes checkboxes and links in FF-2..FF-7 descriptions; prevents `/spec` comments from repeating the issue.
+- 2026-06-10 (v3.26) — **Backlog created:** FF-1..FF-7 (18 SP, full landing page) generated PM-style from Figma frames and created in Jira via Atlassian MCP; FF-5 split from FF-4 at review; ticket source file = Landing page (fileKey `nwCQ1hdons94beObATiRv7`). Figma URLs filled in §8.
 - 2026-06-10 (v3.25) — Constraint recorded: GitHub Free → branch protection only on **public** repos; pilot repo `flowforge-pilot` is public by decision (protection > privacy for a pilot; secrets are excluded by the .env policy). GUIDE §3 got the plan note; §8 repo item filled.
 - 2026-06-10 (v3.24) — **MCP config moved to project scope.** The three servers (atlassian, figma, context7) are added with `--scope project`, producing a committed `.mcp.json` in the repo root — the MCP config is now part of the engine and ships with the template (added to phase-3 composition and extraction prompt; template SETUP simplified: approve `.mcp.json` + `/mcp` auth instead of three `claude mcp add` commands). OAuth tokens are NOT in the file — they stay local per user. GUIDE §4 commands updated with the flag and a trust-prompt note. Discovered during real day-1 setup (the default `local` scope kept the config out of the repo).
 - 2026-06-10 (v3.23) — Sync audit #5 (post-merge, post-metrics). Fixed: (1) template canonical structure was missing `docs/metrics/` and `tests/e2e/` — added; (2) the algorithm's standalone weekly hygiene prompt duplicated GUIDE Prompt 7 (hygiene merged there at v3.21) — replaced with a reference; (3) chat context refreshed: inventory version, decision renumbering (metrics = #14), stale status text (v2.4). Also this session: §8 Figma entry kept as an OPEN item with two URL roles (token source / ticket source), file names intentionally not locked — final choice on day 1.
@@ -288,11 +290,19 @@ README.md contains onboarding: what FlowForge is (3 sentences), how to start wor
 - No real secret values anywhere the agent writes: not in CLAUDE.md, specs, PR bodies, commits, logs, or chat. If a real value is spotted in code or diff — stop and flag it to the human instead of copying it around.
 - Humans create their local env by `cp .env.example .env.local` and filling values. MCP OAuth tokens (Atlassian/Figma) are managed by Claude Code itself and never live in `.env`.
 
-### Design token map (generated at setup — GUIDE Prompt B appends the table here and applies theme.extend to tailwind.config)
+### Design token map (generated at setup — GUIDE Prompt B fills this table after an approval checkpoint and applies theme.extend to tailwind.config via a PR)
 
 | Figma token                                   | Tailwind class / theme key | Raw value |
 | --------------------------------------------- | -------------------------- | --------- |
 | _(empty until generated from the Figma file)_ |                            |           |
+
+### Token map maintenance (incremental)
+
+- The token map grows incrementally via `/spec` ONLY. When a ticket needs values absent from the map, the analyst adds a **"Proposed token additions"** block to the specification: semantic name (role-based: `brand-*`, `surface-*`, `text-*`, `spacing-*`, `radius-*`), Figma origin (variable name or "derived from styles, node X"), raw value.
+- **Dedup check is mandatory before proposing:** normalize the value (lowercase hex, unified units) and search the existing map by VALUE. Exact match → reuse the existing token, do not propose a new one. Near-match (e.g. two close grays) → flag it in the spec and ask the human to canonicalize or confirm both.
+- On spec approval, `/build` applies the additions to `tailwind.config` `theme.extend` AND appends the rows to the map table above in the same branch/PR — the two must never diverge; `/review` verifies map↔config consistency for the touched tokens.
+- Naming is stable and semantic; raw values never appear in component code (no arbitrary values like `bg-[#080c0f]`) — `/review` flags them.
+- Every addition lands in the section 9 log as part of the ticket's cycle entry.
 
 ### Metrics & logging (automated)
 
