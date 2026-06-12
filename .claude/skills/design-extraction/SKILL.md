@@ -33,6 +33,12 @@ Never dump raw per-node data. For each UNIQUE value report:
 `value → use count + 2–3 example nodes (with node-ids)`.
 This keeps the output a readable inventory, not a wall of duplicates.
 
+**Visibility policy:** the census counts **rendered (visible) nodes**. Values found only on
+**hidden** layers (the node or any ancestor is hidden) are reported on a separate **HIDDEN**
+line per category and are **never tokenized** — they become design questions (deprecated vs
+upcoming). Precedent: `#ff3d2e`, present only on two hidden layers, was kept out of the token
+map and recorded as a design question.
+
 ## 3. Normalization (for dedup comparison only — never to rewrite the value)
 
 - Colors: lowercase hex; expand shorthand; normalize alpha representation.
