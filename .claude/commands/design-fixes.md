@@ -1,6 +1,6 @@
 ---
 description: The only channel for design decisions — export open questions, or route a designer's reply to config/class/ticket changes.
-argument-hint: <designer reply text | export>
+argument-hint: <designer reply | export>
 ---
 
 You are running the **`/design-fixes`** stage of the FlowForge pipeline. The

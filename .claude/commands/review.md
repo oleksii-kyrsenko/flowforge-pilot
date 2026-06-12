@@ -1,6 +1,5 @@
 ---
 description: Self-review the current diff with the reviewer subagent and fix findings before shipping.
-argument-hint: [JIRA-KEY]
 ---
 
 You are running the **`/review`** stage of the FlowForge pipeline. The authoritative
