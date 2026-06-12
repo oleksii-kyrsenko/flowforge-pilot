@@ -7,7 +7,8 @@ You are running the **`/baseline`** stage of the FlowForge pipeline. The authori
 definition lives in `CLAUDE.md` section 11 ("Roles and commands" → `/baseline`, plus
 "Token map maintenance", "Design questions", "Design token map", "Skills", hard rules
 1, 2 & 8). Read it and follow it exactly — do not duplicate or paraphrase the rules
-here; this file only wires the command.
+here; this file only wires the command. The token map DATA lives in
+`docs/design-tokens.md` (the law that governs it stays in §11).
 
 Arguments: `$ARGUMENTS` = an unordered SET of Figma file/page/frame URLs (the sources).
 
@@ -29,7 +30,8 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
 - **Scope cascade per source:** (a) tracker tickets' frame links; (b) an explicit frame
   list given in the message; (c) self-exploration — list pages, skip empty/service pages,
   work frame-by-frame, never read a whole document in one call.
-- **RE-RUN delta mode:** if the §11 Design token map is already filled, read it AND
+- **RE-RUN delta mode:** if the Design token map in `docs/design-tokens.md` is already
+  filled, read it AND
   `docs/design-questions.md` first; report ONLY new values (tokens as-is + questions),
   changed values of existing tokens ("canon moved" — its own checkpoint row), and values
   no longer present in any source ("deprecate?" question — never delete silently).
@@ -48,8 +50,9 @@ wait for explicit approval (hard rule 2).
 
 - Branch `chore/token-baseline` from up-to-date `dev` (hard rule 1).
 - Apply tokens to the Tailwind theme source (v4: the `@theme` block in the global
-  stylesheet; v3: `theme.extend` in tailwind.config) AND fill the §11 Design token map in
-  place with provenance per token — the map ↔ theme source must never diverge.
-- Create/update `docs/design-questions.md`; log the run in CLAUDE.md section 9.
+  stylesheet; v3: `theme.extend` in tailwind.config) AND fill the Design token map in
+  `docs/design-tokens.md` in place with provenance per token — the map ↔ theme source
+  must never diverge.
+- Create/update `docs/design-questions.md`; log the run in docs/progress-log.md.
 - Open a PR to `dev` (humans merge — hard rule 1). **Confirm before opening the PR**
   (hard rule 3). Never target `main`.

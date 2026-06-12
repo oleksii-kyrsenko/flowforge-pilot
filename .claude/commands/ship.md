@@ -15,7 +15,7 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
 1. **FIRST**: append `<JIRA-KEY>,ship,start,<TS>` to `docs/metrics/metrics.csv`
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
 2. **LAST**: append `<JIRA-KEY>,ship,done,<TS>`, then append a one-line cycle summary
-   to CLAUDE.md section 9 (date, ticket, stages completed).
+   to docs/progress-log.md (date, ticket, stages completed).
 
 ## Do
 
