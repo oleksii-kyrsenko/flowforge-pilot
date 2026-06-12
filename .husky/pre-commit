@@ -1,0 +1,3 @@
+# Fast gate: format/lint staged files, then whole-project type-check.
+# Full test suite runs on pre-push (e2e never in hooks). Per CLAUDE.md s.11.
+npx lint-staged && npm run typecheck

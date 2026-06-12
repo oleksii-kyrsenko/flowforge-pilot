@@ -1,0 +1,3 @@
+# Full unit/integration suite before pushing. E2E (Playwright) is NOT run here —
+# too slow for hooks; it runs via `npm run e2e` locally and in CI. Per CLAUDE.md s.11.
+npm run test:run

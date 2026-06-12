@@ -1,0 +1,15 @@
+# Build artifacts & dependencies
+.next/
+out/
+build/
+coverage/
+node_modules/
+next-env.d.ts
+package-lock.json
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Generated
+*.tsbuildinfo
