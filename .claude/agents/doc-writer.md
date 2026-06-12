@@ -15,7 +15,8 @@ You may create/edit ONLY:
 - `README.md`
 - anything under `docs/`
 
-You must NEVER edit source code (`src/`, configs, tests, `tailwind.config`, etc.). If a
+You must NEVER edit source code (`src/`, configs, tests, the Tailwind theme source — v4: the
+`@theme` block in the global stylesheet, v3: `tailwind.config` — etc.). If a
 task seems to require a source edit, stop and report it to the orchestrator — that is not
 your job. You do NOT write to Jira (that is the `/spec` and `/ship` orchestrator flows via
 the adf-formatting skill).

@@ -13,10 +13,11 @@ Arguments: `$ARGUMENTS` = either the literal word `export`, or the designer's re
 
 ## Metrics (mandatory — first and last action)
 
-1. **FIRST**: append `design,fixes,start,<TS>` to `docs/metrics/metrics.csv`
-   (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`; use the batch label `design` for the ticket
-   column, or a `<JIRA-KEY>` if the reply maps to one).
-2. **LAST**: append the matching `done` row.
+1. **FIRST**: append `<batch-label-or-JIRA-KEY>,design-fixes,start,<TS>` to
+   `docs/metrics/metrics.csv` (columns are `ticket,stage,event,timestamp_iso`; the stage
+   is the full command name `design-fixes`, NOT `fixes`; `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`;
+   use a short batch label for the ticket column, or a `<JIRA-KEY>` if the reply maps to one).
+2. **LAST**: append the matching `done` row (same ticket + stage).
 
 ## Mode: `export`
 
@@ -28,7 +29,9 @@ repo access). Output it for the human to send via any channel. Make no repo chan
 
 - Match answers to question numbers. Classify each change (composite values compare per
   the **design-extraction** skill):
-  - token **VALUE** change → edit the map + `tailwind.config` only (usages update automatically);
+  - token **VALUE** change → edit the map + the Tailwind theme source (v4: the `@theme` block
+    in the global stylesheet; v3: `theme.extend` in tailwind.config) — see CLAUDE.md §11 Token
+    map maintenance — only (usages update automatically);
   - token **COLLAPSE / RENAME** → edit map/config AND replace the affected classes across
     `src/` (a config-only change would break the build);
   - **DELETE** → remove the token and its usages;
