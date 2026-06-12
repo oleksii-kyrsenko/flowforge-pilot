@@ -1,0 +1,55 @@
+---
+description: Build or update the design token baseline from Figma in verbatim mode — checkpoint, then apply tokens to the theme source via a PR.
+argument-hint: <figma-url...>
+---
+
+You are running the **`/baseline`** stage of the FlowForge pipeline. The authoritative
+definition lives in `CLAUDE.md` section 11 ("Roles and commands" → `/baseline`, plus
+"Token map maintenance", "Design questions", "Design token map", "Skills", hard rules
+1, 2 & 8). Read it and follow it exactly — do not duplicate or paraphrase the rules
+here; this file only wires the command.
+
+Arguments: `$ARGUMENTS` = an unordered SET of Figma file/page/frame URLs (the sources).
+
+## Methodology gate
+
+VERBATIM mode — the mockup is canon; the pipeline never normalizes, merges, or "fixes"
+design values. Methodology = the **design-extraction** skill. If that skill is missing,
+**STOP** and ask to run bootstrap — do not improvise an extraction.
+
+## Metrics (mandatory — first and last action)
+
+1. **FIRST**: append `baseline,baseline,start,<TS>` to `docs/metrics/metrics.csv`
+   (columns are `ticket,stage,event,timestamp_iso`; `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`;
+   use `baseline` for the ticket column unless a specific `<JIRA-KEY>` applies).
+2. **LAST**: append the matching `done` row (same ticket + stage).
+
+## Do (per CLAUDE.md §11)
+
+- **Scope cascade per source:** (a) tracker tickets' frame links; (b) an explicit frame
+  list given in the message; (c) self-exploration — list pages, skip empty/service pages,
+  work frame-by-frame, never read a whole document in one call.
+- **RE-RUN delta mode:** if the §11 Design token map is already filled, read it AND
+  `docs/design-questions.md` first; report ONLY new values (tokens as-is + questions),
+  changed values of existing tokens ("canon moved" — its own checkpoint row), and values
+  no longer present in any source ("deprecate?" question — never delete silently).
+  Unchanged mockups → print "No changes against the approved map", change no files, open
+  no PR.
+
+## CHECKPOINT, then STOP
+
+Before any write, present: a **PAGE INVENTORY** per source (swept / skipped: empty or
+service / out of scope / **NOT VISIBLE TO TOOL** — coverage claims are valid only against
+this inventory), the **full map in sections** with every section printed even when empty
+("none found"), the **pending** list, and **draft design questions**. Then **STOP** and
+wait for explicit approval (hard rule 2).
+
+## Apply (only after approval)
+
+- Branch `chore/token-baseline` from up-to-date `dev` (hard rule 1).
+- Apply tokens to the Tailwind theme source (v4: the `@theme` block in the global
+  stylesheet; v3: `theme.extend` in tailwind.config) AND fill the §11 Design token map in
+  place with provenance per token — the map ↔ theme source must never diverge.
+- Create/update `docs/design-questions.md`; log the run in CLAUDE.md section 9.
+- Open a PR to `dev` (humans merge — hard rule 1). **Confirm before opening the PR**
+  (hard rule 3). Never target `main`.
