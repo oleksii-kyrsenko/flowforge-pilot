@@ -39,4 +39,4 @@ repo access). Output it for the human to send via any channel. Make no repo chan
 - Update each question's status in `docs/design-questions.md`: ✅ resolved / ✅ as-designed /
   🚫 wontfix, with date + PR link. (as-designed still produces a PR removing the "⚠ pending" marks.)
 - Branch from up-to-date `dev`, one PR per batch. **Confirm before opening the PR**
-  (hard rule 3). Log the batch in CLAUDE.md section 9.
+  (hard rule 3). Log the batch in docs/progress-log.md.
