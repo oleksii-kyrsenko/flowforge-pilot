@@ -15,7 +15,7 @@ questions to the designer (see the **Design questions** journal), applied only v
 Extract every styled property. The list is a **structure, not a filter**:
 
 - **Solid colors** — fills, text colors, icon colors (with the surface/role they appear on).
-- **Gradients** — type (linear/radial/conic), ordered color stops (position + value), angle.
+- **Gradients** — type (linear/radial/angular/diamond), ordered color stops (position + value), angle.
 - **Shadows & blurs** — color, x/y offset, blur, spread; note layer (drop/inner) and
   background blur separately.
 - **Strokes** — color, weight, dash pattern, alignment (inside/center/outside).
@@ -43,6 +43,7 @@ This keeps the output a readable inventory, not a wall of duplicates.
 
 ## 4. Dedup outcomes
 
+- **Search scope:** search by normalized value in BOTH the token map (CLAUDE.md §11) and the resolved entries of `docs/design-questions.md`. (This lookup is how the removed-value case below is detected at all — per §11 Token map maintenance.)
 - **Exact match** (after normalization) → reuse the existing token; do not create a new one.
 - **Near-match** (close but not equal — e.g. two close grays) → the new value becomes a
   token **AS-IS** under a descriptive name, marked **"⚠ pending"**, AND a **design question**
