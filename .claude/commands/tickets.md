@@ -11,13 +11,6 @@ rules here; this file only wires the command.
 Arguments: `$ARGUMENTS` = an unordered SET of Figma file/page/frame URLs (the sources),
 plus an optional trailing `[count]` for how many tickets to generate.
 
-## Metrics (mandatory — first and last action)
-
-1. **FIRST**: append `tickets,tickets,start,<TS>` to `docs/metrics/metrics.csv`
-   (columns are `ticket,stage,event,timestamp_iso`; `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`;
-   use `tickets` for the ticket column).
-2. **LAST**: append the matching `done` row (same ticket + stage).
-
 ## Do (per CLAUDE.md §11)
 
 - Generate a PM-style backlog from the mockup frames. Per ticket: title, user story,

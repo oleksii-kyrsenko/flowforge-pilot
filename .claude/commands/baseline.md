@@ -18,13 +18,6 @@ VERBATIM mode — the mockup is canon; the pipeline never normalizes, merges, or
 design values. Methodology = the **design-extraction** skill. If that skill is missing,
 **STOP** and ask to run bootstrap — do not improvise an extraction.
 
-## Metrics (mandatory — first and last action)
-
-1. **FIRST**: append `baseline,baseline,start,<TS>` to `docs/metrics/metrics.csv`
-   (columns are `ticket,stage,event,timestamp_iso`; `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`;
-   use `baseline` for the ticket column unless a specific `<JIRA-KEY>` applies).
-2. **LAST**: append the matching `done` row (same ticket + stage).
-
 ## Do (per CLAUDE.md §11)
 
 - **Scope cascade per source:** (a) tracker tickets' frame links; (b) an explicit frame
