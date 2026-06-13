@@ -28,6 +28,7 @@ Jira until the human approves.
 
 ## Create (only after approval)
 
-- Create the tickets in **Jira project FF** via Atlassian MCP, in the **To Do** column.
+- Create the tickets in **Jira project FF** via Atlassian MCP — they default to **Backlog**
+  (the project's initial status); do NOT issue an explicit transition.
 - Write descriptions in ADF using the **adf-formatting** skill (`contentFormat: "adf"`,
   never raw Markdown — hard rule 8) so checkboxes and links render correctly.

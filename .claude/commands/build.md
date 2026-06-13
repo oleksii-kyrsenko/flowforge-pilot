@@ -17,6 +17,17 @@ explicitly approved (hard rule 2) — if not, stop and ask.
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
 2. **LAST**: append `<JIRA-KEY>,build,done,<TS>`.
 
+## Status preflight (at the start)
+
+Per CLAUDE.md §11 "Ticket lifecycle & board statuses", check the ticket's status first:
+
+- **In Progress** → proceed normally (the expected path — no prompt).
+- **NOT In Progress** (Backlog / To Do / Review / Done) → **STOP and flag.** Report the actual
+  status, note this is unusual (`/spec` normally leaves it In Progress) and may mean `/spec`
+  was skipped (no approved spec?) or the wrong ticket key was passed. Ask for confirmation
+  before transition **31** (In Progress) and proceeding. Human confirm is required only on
+  this anomaly.
+
 ## Do
 
 - Update the base first: `git fetch origin && git checkout dev && git pull`.

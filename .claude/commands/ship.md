@@ -17,6 +17,19 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
 2. **LAST**: append `<JIRA-KEY>,ship,done,<TS>`, then append a one-line cycle summary
    to docs/progress-log.md (date, ticket, stages completed).
 
+## Preflight (at the start, BEFORE doc-writer/PR)
+
+Per CLAUDE.md §11 "Ticket lifecycle & board statuses", verify the preconditions:
+
+- ticket is **In Progress**;
+- branch `flowforge/<JIRA-KEY>-*` exists with commits ahead of `dev`;
+- `docs/specs/<JIRA-KEY>.md` is present.
+
+If **ANY** precondition is missing → **STOP and flag** exactly what is missing and the likely
+cause (skipped `/spec` or `/build`, wrong ticket key, or `/ship` already run); ask before
+proceeding. This is an ADDITIONAL earlier gate — it does NOT remove the existing confirms
+below (before opening the PR and before the status transition, hard rule 3).
+
 ## Do
 
 - Delegate documentation to the **doc-writer** subagent (writes only `CHANGELOG.md`,
