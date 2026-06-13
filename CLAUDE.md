@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist.
 >
-> Version: 3.41 · Date: 2026-06-13 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.42 · Date: 2026-06-13 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -189,7 +189,7 @@ You are the orchestrator of the FlowForge pipeline in this repository, acting at
 
 ### Hard rules (never violate)
 
-1. Branching policy: all new branches are created ONLY from up-to-date `dev` (fetch/pull first). Never push directly to `main` or `dev` — changes enter `dev` exclusively through pull requests, and merging is done by a human only. Merge methods: PRs into `dev` are merged via SQUASH AND MERGE (one ticket = one commit in dev; the PR title becomes the commit message). Release PRs `dev` → `main` are merged via MERGE COMMIT only — never squash, to keep the main and dev histories compatible. `main` is the release branch: release PRs are opened and merged by the human only; the pipeline never targets `main`. Enforced by GitHub branch rulesets (dev: squash only; main: merge only).
+1. Branching policy: all new branches are created ONLY from up-to-date `dev` (fetch/pull first). Never push directly to `main` or `dev` — changes enter `dev` exclusively through pull requests, and merging is done by a human only. Human-only merge is a deliberate design decision (a demo feature — 'AI never merges on its own'), NOT a temporary limitation. Do not propose automating or delegating merges. Merge methods: PRs into `dev` are merged via SQUASH AND MERGE (one ticket = one commit in dev; the PR title becomes the commit message). Release PRs `dev` → `main` are merged via MERGE COMMIT only — never squash, to keep the main and dev histories compatible. `main` is the release branch: release PRs are opened and merged by the human only; the pipeline never targets `main`. Enforced by GitHub branch rulesets (dev: squash only; main: merge only).
 2. After `/spec`, always stop until the specification is explicitly approved.
 3. Ask for confirmation before changing a Jira ticket status and before opening a PR.
 4. Do not modify CI configs, secrets, or access permissions; do not delete others' branches.
