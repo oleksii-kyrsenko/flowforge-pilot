@@ -11,7 +11,14 @@ pipeline never normalizes or "fixes" design values on its own.
 
 Arguments: `$ARGUMENTS` = either the literal word `export`, or the designer's reply text.
 
-## Metrics (mandatory — first and last action)
+## Metrics (designer-reply mode only — first and last action)
+
+> **EXPORT mode writes NO metrics.** `/design-fixes export` is a read-only render — no
+> branch, no PR, no token/status change, no cycle — so it does NOT append to
+> `docs/metrics/metrics.csv`. A pseudo-ticket row (e.g. `design-batch-export`) would
+> pollute per-ticket cycle aggregation, exactly like the `/tickets`/`/baseline` rows
+> removed in v3.40. Only a `/design-fixes` run that applies a designer reply (branch +
+> PR) writes metrics. The two steps below apply to **designer-reply mode only**.
 
 1. **FIRST**: append `<batch-label-or-JIRA-KEY>,design-fixes,start,<TS>` to
    `docs/metrics/metrics.csv` (columns are `ticket,stage,event,timestamp_iso`; the stage
@@ -24,6 +31,12 @@ Arguments: `$ARGUMENTS` = either the literal word `export`, or the designer's re
 Render all OPEN questions from `docs/design-questions.md` as a self-contained English
 markdown document — absolute Figma node links, NO repo references (designers need no
 repo access). Output it for the human to send via any channel. Make no repo changes.
+
+**Output dedup invariant:** each open question must appear EXACTLY ONCE. Before
+returning, verify rendered-question count == number of OPEN questions in
+`docs/design-questions.md` (count ⏳-open QUESTION entries only — exclude the
+status-legend line) and that no question number repeats; fix before output if they
+don't match.
 
 ## Mode: designer reply
 
