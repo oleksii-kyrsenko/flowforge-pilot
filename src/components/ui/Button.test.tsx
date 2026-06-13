@@ -107,6 +107,14 @@ describe("Button", () => {
       expect(onClick).toHaveBeenCalled();
     });
 
+    it("activates on Space", async () => {
+      const onClick = vi.fn();
+      render(<Button onClick={onClick}>Submit</Button>);
+      await userEvent.tab();
+      await userEvent.keyboard("[Space]");
+      expect(onClick).toHaveBeenCalled();
+    });
+
     it("takes its accessible name from children", () => {
       render(<Button>Reserve now</Button>);
       expect(screen.getByRole("button", { name: "Reserve now" })).toBeInTheDocument();
