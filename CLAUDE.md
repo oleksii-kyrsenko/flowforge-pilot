@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist.
 >
-> Version: 3.0 · Date: 2026-06-09 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.40 · Date: 2026-06-13 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -291,7 +291,7 @@ The filled token map (all rows, provenance, raw values, `⚠ pending` marks) liv
 
 ### Metrics & logging (automated)
 
-- Every pipeline command (`/spec`, `/build`, `/review`, `/ship`, `/design-fixes`, `/baseline`, `/tickets`) MUST, as its first and last action, append a row to `docs/metrics/metrics.csv` (columns: `ticket,stage,event,timestamp_iso`; events: `start`/`done`) using `date -u +%Y-%m-%dT%H:%M:%SZ`. Never skip or backfill rows from memory.
+- Every pipeline command (`/spec`, `/build`, `/review`, `/ship`, `/design-fixes`) MUST, as its first and last action, append a row to `docs/metrics/metrics.csv` (columns: `ticket,stage,event,timestamp_iso`; events: `start`/`done`) using `date -u +%Y-%m-%dT%H:%M:%SZ`. Never skip or backfill rows from memory. Setup/batch commands (`/tickets`, `/baseline`) do NOT write metrics.csv; they record their activity in docs/progress-log.md.
 - Derived human intervals: `spec done → build start` ≈ human spec review; `ship done (PR opened) → merge` ≈ human code review. These are wall-clock approximations — the human may correct them (GUIDE Prompt 6, optional).
 - After `/ship`, append a one-line cycle summary to docs/progress-log.md (date, ticket, stages completed).
 - Weekly (GUIDE Prompt 7): aggregate metrics.csv into the "after" numbers of section 7.
