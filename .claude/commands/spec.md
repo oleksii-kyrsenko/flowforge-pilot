@@ -20,6 +20,20 @@ links (e.g. desktop + mobile) — extract and dedup across ALL of them.
 2. **LAST**, after the spec is posted, append `<JIRA-KEY>,spec,done,<TS>`.
    Never skip or backfill these rows from memory.
 
+## Ticket lifecycle (AUTO, at the start — after the metrics `start` row, before reading the ticket)
+
+Advance the ticket per CLAUDE.md §11 "Ticket lifecycle & board statuses". This is fully
+automatic — **no confirm** (running `/spec` is itself the intent to start work; hard rule 3
+asymmetry). Idempotent and forward-only — never move a ticket backwards.
+
+1. Read the ticket's current status.
+2. If status is **Backlog** → transition **21** (To Do); if already To Do or further → skip.
+3. **Claim assignee:** resolve the current Atlassian user dynamically via `atlassianUserInfo`
+   (do NOT hardcode an accountId — keep portable for the template). If the ticket's assignee
+   is empty or not the current user → set it to the current user; if already the current
+   user → skip.
+4. Transition **31** (In Progress); if already In Progress or further → skip.
+
 ## Do
 
 - Delegate to the **analyst** subagent (read-only + MCP). It reads the ticket via
