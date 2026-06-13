@@ -26,6 +26,7 @@ Node-link files: Components = `JFKSRWAuZTSR4nUMNKe0Gn`, Website = `FlWYwSHj7vtd4
 
 4. **Two near-match text-shadows.** Button label `0px 1px 3px rgba(0,0,0,0.25)` ([`2:54`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-54)) vs "Read More" label `0px 1px 4px rgba(0,0,0,0.25)` ([`2:114`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-114)) — differ only in blur (3 vs 4). Kept as `--text-shadow-sm` / `--text-shadow-md`.
    Options: (a) unify to one · (b) keep both.
+   _FF-8 `/review` note (2026-06-13): the outline "Read More" label is rendered with `background-clip:text` + `color:transparent` (its white→white/40 gradient label). A `text-shadow` on transparent glyphs paints as a soft halo around/through the letters rather than a true glyph drop-shadow — so the answer should also confirm whether the outline label keeps a text-shadow at all (and at which blur). Tied to Q3 (the label gradient) and Q20 (outline states)._
    Status: ⏳ open (asked 2026-06-12)
 
 5. **Inconsistent corner radii.** Most controls are sharp `0px` ([`2:53`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-53)); Apple Pay button is `8px` ([`62:673`](https://www.figma.com/design/FlWYwSHj7vtd487hdXZi6t/Website?node-id=62-673)) and car-photo masks ~`5px` ([`62:945`](https://www.figma.com/design/FlWYwSHj7vtd487hdXZi6t/Website?node-id=62-945)); `13px` not found. Tokenized `--radius-image: 5px`, `--radius-control: 8px` (⚠ pending).
@@ -74,3 +75,24 @@ Node-link files: Components = `JFKSRWAuZTSR4nUMNKe0Gn`, Website = `FlWYwSHj7vtd4
 16. **Letter-spacing `1.82px`.** Tracking on car-card mask text ([`62:1944`](https://www.figma.com/design/FlWYwSHj7vtd487hdXZi6t/Website?node-id=62-1944)); the only non-default letter-spacing found. Tokenized as `--tracking-mask`.
     Options: (a) intentional tracking token (keep) · (b) drop / round.
     Status: ⏳ open (asked 2026-06-12)
+
+---
+
+## FF-8 Button (`/spec`) — opened 2026-06-13
+
+17. **No `disabled` button variant exists in Figma.** The swatch sheet ([`2:51`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-51)) shows only Normal / Hover / Press / Active — no disabled rendering. The spec proposes label at `--color-on-dark-40` + non-interactive, but the actual disabled appearance (desaturated gradient? reduced opacity? flat fill?) is undefined.
+    Options: (a) confirm the proposed reduced-opacity-label treatment · (b) provide a disabled Figma variant · (c) buttons are never disabled in this product.
+    _FF-8 `/review` note (2026-06-13) — deliberate spec↔code divergence: the implementation uses `disabled:opacity-50` (uniform dim), NOT the spec's `--color-on-dark-40` label color, because the outline variant renders its label via `background-clip:text` (transparent text), so a per-variant text-color swap can't apply there. The approved spec **intentionally retains `--color-on-dark-40` as the intended design** (not rewritten); the divergence is recorded here and will be reconciled when Q17 is answered via `/design-fixes`._
+    Status: ⏳ open (asked 2026-06-13)
+
+18. **No focus-visible ring in Figma.** A visible focus indicator is required by a11y / AC5, but the mockup defines none. Spec proposes a `2px` `--color-primary` (#e98c00) ring with offset, on `:focus-visible` only.
+    Options: (a) confirm the proposed ring color/width · (b) specify a different focus indicator.
+    Status: ⏳ open (asked 2026-06-13)
+
+19. **Wide-CTA horizontal padding `24px` has no token.** The "Book Now" CTA ([`1:598`](https://www.figma.com/design/FlWYwSHj7vtd487hdXZi6t/Website?node-id=1-598)) uses `px-24`, while standard buttons use `px-16` (`--spacing-control`). 24px has no existing spacing token and no defined role.
+    Options: (a) standardize all buttons to 16px (24px is incidental) · (b) 24px is an intentional "large CTA" padding → mint a token / add a size variant.
+    Status: ⏳ open (asked 2026-06-13)
+
+20. **Outline ("Read More") hover/press states render identical.** Normal/Hover/Press instances ([`2:114`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-114) / [`2:115`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-115) / [`2:116`](https://www.figma.com/design/JFKSRWAuZTSR4nUMNKe0Gn/Components?node-id=2-116)) show the same border/fill/label via `get_design_context`; no distinguishing change was exposed.
+    Options: (a) outline has no hover/press change (single state) · (b) provide the intended outline hover/press treatment (e.g. border → `--color-gold-hover-start`).
+    Status: ⏳ open (asked 2026-06-13)
