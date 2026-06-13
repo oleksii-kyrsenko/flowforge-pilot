@@ -27,6 +27,9 @@ const eslintConfig = defineConfig([
     rules: {
       // CLAUDE.md s.11 "Code standards": components and modules use NAMED exports.
       "import-x/prefer-default-export": "off",
+      // React 19 removed defaultProps for function components; enforce defaults via
+      // default ARGUMENTS instead of the dead `defaultProps` static.
+      "react/require-default-props": ["error", { functions: "defaultArguments" }],
     },
   },
   // Tooling, config, and test files legitimately import devDependencies.

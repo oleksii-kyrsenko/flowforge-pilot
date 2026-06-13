@@ -1,1 +1,5 @@
 ticket,stage,event,timestamp_iso
+FF-8,spec,start,2026-06-13T12:22:28Z
+FF-8,spec,done,2026-06-13T12:37:33Z
+FF-8,build,start,2026-06-13T12:41:22Z
+FF-8,build,done,2026-06-13T13:07:50Z
