@@ -141,7 +141,7 @@ A full cycle within the depth of one role — an honest format for the demo: it 
 
 - [x] My role and team: **Frontend Developer**
 - [x] Stack: **Next.js, TypeScript, Tailwind CSS; design — Figma**
-- [x] Task tracker: **Jira — own Jira Cloud Free site (decision: corporate Jira is not available), project key FF, Kanban, company-managed, columns To Do → In Progress → Review → Done. Setup steps: GUIDE Appendix A; tickets generated PM-style via GUIDE Prompt A.** Site URL: **https://okyrsenko.atlassian.net**
+- [x] Task tracker: **Jira — own Jira Cloud Free site (decision: corporate Jira is not available), project key FF, Kanban, company-managed, columns Backlog → To Do → In Progress → Review → Done. Setup steps: GUIDE Appendix A; tickets generated PM-style via GUIDE Prompt A.** Site URL: **https://okyrsenko.atlassian.net**
 - [x] Figma: **multi-file Figma project. Two URL roles** (the pipeline needs both regardless of which files are picked):
       **Token source** (GUIDE Prompt B runs against it): the design-system/library file where variables/styles live. URL: **https://www.figma.com/design/nwCQ1hdons94beObATiRv7/Landing-page?m=dev** _(same file for now; extract a dedicated library file if the token set grows)_
       **Ticket source** (GUIDE Prompt A frames come from it): the working file chosen for the pilot scope. URL: **https://www.figma.com/design/nwCQ1hdons94beObATiRv7/Landing-page?m=dev** (fileKey `nwCQ1hdons94beObATiRv7`)
