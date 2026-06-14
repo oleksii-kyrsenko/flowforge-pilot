@@ -34,6 +34,15 @@ and `docs/specs/` first; "reuses X" or "creates new primitive X" — new primiti
 explicit approval) · a11y · acceptance criteria · **Test plan** line (unit / +integration /
 +e2e) · **SEO requirements** line for route/page-level tickets.
 
+## UI-content preflight (before any Figma read)
+
+If the ticket content describes a visual/UI component (renders with an appearance) AND no
+Figma frame link is available (on the ticket or as an argument) → STOP. Do not fabricate
+design values, do not write a spec; report the likely missing mockup and ask the human to
+supply the frame or confirm the ticket is intentionally non-UI. An honest non-UI ticket
+(logic/hook, no UI content) proceeds normally: UI sections N/A with reasons, no Figma call,
+no invented tokens.
+
 ## Hard rules you must respect
 
 - Do not invent tokens — values come only from Figma; missing → ask (becomes a design question).
