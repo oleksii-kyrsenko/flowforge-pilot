@@ -25,4 +25,9 @@ derive the key from the current branch name (`flowforge/<JIRA-KEY>-...`).
   pending-token watch (the "⚠ pending" list must not grow silently — new entries need
   a design question); test-to-acceptance-criteria mapping; and SEO semantics for
   route-level changes.
+- Font-default compliance: a component must not pin its own font-family (a `font-<family>`
+  utility class) unless the spec explicitly requires a non-default family for that element.
+  Inheriting the global document default is the norm; `/review` flags any font-family class
+  on a component and verifies it against the spec — an unjustified one is the stray-class
+  bug (the global default should apply instead).
 - Fix the findings. Include the review report in the eventual PR description.
