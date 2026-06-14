@@ -2,7 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__atlassian__transitionJiraIssue|mcp__atlassian__editJiraIssue",
+        "matcher": "mcp__atlassian__transitionJiraIssue|mcp__atlassian__editJiraIssue|mcp__atlassian__atlassianUserInfo",
         "hooks": [
           {
             "type": "command",
