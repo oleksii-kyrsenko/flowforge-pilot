@@ -34,6 +34,15 @@ asymmetry). Idempotent and forward-only — never move a ticket backwards.
    user → skip.
 4. Transition **31** (In Progress); if already In Progress or further → skip.
 
+## UI-content preflight (before any Figma read)
+
+If the ticket content describes a visual/UI component (renders with an appearance) AND no
+Figma frame link is available (on the ticket or as an argument) → STOP. Do not fabricate
+design values, do not write a spec; report the likely missing mockup and ask the human to
+supply the frame or confirm the ticket is intentionally non-UI. An honest non-UI ticket
+(logic/hook, no UI content) proceeds normally: UI sections N/A with reasons, no Figma call,
+no invented tokens.
+
 ## Do
 
 - Delegate to the **analyst** subagent (read-only + MCP). It reads the ticket via

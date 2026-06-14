@@ -23,7 +23,8 @@ export interface ButtonProps extends ComponentProps<"button"> {
 // Gradients have no first-class v4 utility, so they ride via bg-[image:var(--…)].
 const base = cn(
   "inline-flex items-center justify-center whitespace-nowrap",
-  "font-poppins text-base rounded-none px-control py-btn-y cursor-pointer",
+  // Poppins is inherited from the document default (root layout); no per-component font class.
+  "text-base rounded-none px-control py-btn-y cursor-pointer",
   // Gradient swaps are instant (CSS can't interpolate gradients); shadow/opacity ease.
   "transition-[background-image,box-shadow,opacity] duration-base ease-out",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",

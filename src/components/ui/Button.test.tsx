@@ -89,7 +89,7 @@ describe("Button", () => {
       const link = screen.getByRole("link", { name: "View all" });
       expect(link).toHaveAttribute("href", "/cars");
       // Slot merges the Button base classes onto the child.
-      expect(link.className).toContain("font-poppins");
+      expect(link.className).toContain("inline-flex");
       // No spurious button type on a non-button child.
       expect(link).not.toHaveAttribute("type");
     });

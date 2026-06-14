@@ -74,3 +74,11 @@ changed properties are the states worth specifying.
 Semantic (role) names only where the source proves the role (a Figma variable/style name,
 or clear component usage). Otherwise use descriptive names (e.g. `orange-600`). Renames
 happen via `/design-fixes` only. Raw values never appear in component code.
+
+## 8. Primary font determination (baseline, not /spec)
+
+During the census, tally font families by frequency across all swept frames. The most
+frequent family is the PRIMARY-FONT CANDIDATE — a hypothesis, not a verdict (like a
+near-match token): confirmed by the human at the baseline checkpoint. /spec NEVER determines
+the primary font (a single ticket frame is too narrow a view); it consumes the confirmed
+primary font. Frames intentionally using a different family → design question.
