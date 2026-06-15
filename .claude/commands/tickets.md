@@ -11,6 +11,10 @@ rules here; this file only wires the command.
 Arguments: `$ARGUMENTS` = an unordered SET of Figma file/page/frame URLs (the sources),
 plus an optional trailing `[count]` for how many tickets to generate.
 
+**Source required (preflight):** at least one Figma source URL. With no Figma URL argument → STOP
+with a clear error ("provide a Figma file/page/frame URL"); never fall back to a default/project
+Figma URL. (Forbids only a zero-argument call; the per-source scope cascade is unchanged.)
+
 ## Do (per CLAUDE.md §11)
 
 - Generate a PM-style backlog from the mockup frames. Per ticket: title, user story,
