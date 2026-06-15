@@ -12,6 +12,10 @@ here; this file only wires the command. The token map DATA lives in
 
 Arguments: `$ARGUMENTS` = an unordered SET of Figma file/page/frame URLs (the sources).
 
+**Source required (preflight):** at least one Figma source URL. With no Figma URL argument → STOP
+with a clear error ("provide a Figma file/page/frame URL"); never fall back to a default/project
+Figma URL. (Forbids only a zero-argument call; the per-source scope cascade is unchanged.)
+
 ## Methodology gate
 
 VERBATIM mode — the mockup is canon; the pipeline never normalizes, merges, or "fixes"
