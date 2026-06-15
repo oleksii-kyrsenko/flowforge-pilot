@@ -41,6 +41,9 @@ Per CLAUDE.md §11 "Ticket lifecycle & board statuses", check the ticket's statu
   must never diverge). No raw values in component code.
 - **Animations:** implement CSS transitions and simple keyframes only; anything
   flagged "complex animation" in the spec stays a human decision — do not implement it.
+- **Icons / vector assets:** obtain glyph geometry via the design-extraction skill's vector-asset
+  method; if vector geometry cannot be retrieved by any available tool → STOP and ask, never
+  hand-author or guess path geometry (hard rule 5, at the build layer).
 - Generate tests per the spec's Test plan (unit always; integration/e2e as specified).
   E2E specs go in `tests/e2e/<JIRA-KEY>.spec.ts`.
 - Get `npm run lint`, `npm run typecheck`, and `npm run test:run` green before finishing.
