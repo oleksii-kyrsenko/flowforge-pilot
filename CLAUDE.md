@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist.
 >
-> Version: 3.48 · Date: 2026-06-15 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.49 · Date: 2026-06-15 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -218,7 +218,7 @@ Status advances are **idempotent and forward-only** — the pipeline never moves
 
 - Next.js (App Router), TypeScript strict, Tailwind CSS; components use named exports.
 - Repository scripts: `npm run lint` (ESLint), `npm run typecheck` (`tsc --noEmit`), `npm run test:run` (Vitest unit/integration), `npm run e2e` (Playwright), `npm run format` (Prettier). Enforcement layering: pre-commit runs `lint-staged` then `npm run typecheck`; pre-push runs `npm run test:run`; e2e runs via `npm run e2e` (never in hooks).
-- Commits: `feat|fix|chore(<JIRA-KEY>): description`.
+- Commits: `feat|fix|chore(<JIRA-KEY>): description`. **No auto-attribution:** never add `Co-Authored-By:` trailers, nor `Generated with` / `🤖 Generated with [Claude Code]` lines, to commit messages OR PR bodies — both contain only the substantive content.
 
 ### Code style & pre-commit enforcement
 
