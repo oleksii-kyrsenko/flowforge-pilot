@@ -19,6 +19,8 @@ Extract every styled property. The list is a **structure, not a filter**:
 - **Shadows & blurs** — color, x/y offset, blur, spread; note layer (drop/inner) and
   background blur separately.
 - **Strokes** — color, weight, dash pattern, alignment (inside/center/outside).
+- **Icons / vector glyphs** — extract the real vector source (path geometry), not a raster
+  render; see §9 _Icon & vector-glyph extraction_ for the retrieval method.
 - **Corner radii** — per corner if they differ.
 - **Typography** — family, weight, size, line-height, letter-spacing (each a component).
 - **Auto-layout spacing** — gaps, padding (per side), item spacing.
@@ -82,3 +84,24 @@ frequent family is the PRIMARY-FONT CANDIDATE — a hypothesis, not a verdict (l
 near-match token): confirmed by the human at the baseline checkpoint. /spec NEVER determines
 the primary font (a single ticket frame is too narrow a view); it consumes the confirmed
 primary font. Frames intentionally using a different family → design question.
+
+## 9. Icon & vector-glyph extraction
+
+Icons are vector geometry, not tokens — but the same canon rule applies: extract the real
+source, never invent it.
+
+- **Retrieve the vector via `download_assets` with `format: "svg"`** on the PLACED-INSTANCE node
+  (the master is often not page-addressable). The export is genuine vector: real path data
+  (`d="…"`, `stroke`, `stroke-width`, linecaps), with `rawImages: []` confirming no raster fill.
+- **`get_design_context` and `get_screenshot` are NOT vector sources.** `get_design_context`
+  represents an icon as a raster `<img>` reference; a screenshot is a pixel render. Neither
+  exposes path geometry, and **a raster result is NOT evidence that the vector is unavailable** —
+  it means "wrong tool": call `download_assets` with `format: "svg"` instead. Never conclude
+  "icons are flattened raster / geometry not extractable" from `get_design_context` alone.
+- **Isolate the inner glyph group.** The SVG export wraps the glyph in export-frame and
+  page-background elements (a background `<rect>`, parent `<g>`s). Emit only the inner glyph group
+  (`<g id="<name>"><path id="Icon" …>`); never the wrapper rects/groups.
+- **Scaled instances export scaled geometry.** A non-canonical-size instance exports scaled
+  coordinates and stroke-width. For canonical geometry prefer a true full-size instance (or the
+  master if addressable); if only a scaled instance is reachable, surface it as a design question —
+  never silently normalize the geometry.
