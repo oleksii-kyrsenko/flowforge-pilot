@@ -113,6 +113,11 @@
   --spacing-card-pad: 32px; /* content-card padding */
   --spacing-readmore-y: 37px; /* "Read More" outline-button vertical padding */
 
+  /* Icon sizing — default rendered height (FF-9); width follows each glyph's
+     natural viewBox aspect. Per-icon viewBox/stroke-width are glyph geometry,
+     not tokens (encoded verbatim in ui/Icon). */
+  --size-icon: 24px;
+
   /* Breakpoints (only two frame widths exist) */
   --breakpoint-mobile: 360px;
   --breakpoint-desktop: 1440px;
