@@ -2,9 +2,9 @@
 
 > **Purpose of this file:** the single reusable source of truth for the project. Attach it at the start of any new Claude chat, or place it in the repository root as `CLAUDE.md` for Claude Code — the assistant immediately gets the full history, goals, and current status.
 >
-> **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist.
+> **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.51 · Date: 2026-06-21 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.52 · Date: 2026-06-21 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
