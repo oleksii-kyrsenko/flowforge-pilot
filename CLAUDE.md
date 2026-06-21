@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.53 · Date: 2026-06-21 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.54 · Date: 2026-06-21 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -277,6 +277,7 @@ README.md contains onboarding: what FlowForge is (3 sentences), how to start wor
 - The agent maintains **`.env.example` only**: placeholder values + a one-line comment per variable (what it is, where to obtain it). Whenever code introduces, renames, or removes an env variable, update `.env.example` in the same change and mention it in the PR description.
 - No real secret values anywhere the agent writes: not in CLAUDE.md, specs, PR bodies, commits, logs, or chat. If a real value is spotted in code or diff — stop and flag it to the human instead of copying it around.
 - Humans create their local env by `cp .env.example .env.local` and filling values. MCP OAuth tokens (Atlassian/Figma) are managed by Claude Code itself and never live in `.env`.
+- `.claude/settings.local.json` is a per-user local file — gitignored, never committed; committing it would leak per-user permissions into the repo/template.
 
 ### Design token map — law below, DATA in docs/design-tokens.md
 
