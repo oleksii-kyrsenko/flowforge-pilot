@@ -2,12 +2,13 @@
 # FlowForge PreToolUse hook: Jira permission gate.
 # Auto-allows ONLY /spec's forward lifecycle calls that CLAUDE.md hard rule 3 marks
 # "AUTO, no confirm" — transition 21 (To Do) / 31 (In Progress), an assignee-only
-# claim, and the read-only atlassianUserInfo identity lookup that resolves the current
+# claim, a NEW Jira comment (addCommentToJiraIssue, add-only — class A, append-only per
+# §9.1), and the read-only atlassianUserInfo identity lookup that resolves the current
 # user for that claim — so the harness matches the instruction layer. Everything else
 # (the Review transition 51, any broader edit, an unknown tool, a parse failure) falls
 # through to the normal human confirm.
 #
-# SAFE-FAILURE INVARIANT: only the three exact cases above ever emit "allow"; every other
+# SAFE-FAILURE INVARIANT: only the four exact cases above ever emit "allow"; every other
 # path — including JSON parse failure, missing fields, unknown tool, or node failing to
 # run — emits "ask". A bug can only fail toward confirm, never toward auto-allow; the
 # hook never broadens approval. The script always exits 0, so a non-zero node exit can't
@@ -35,6 +36,8 @@ process.stdin.on("data", d => (s += d)).on("end", () => {
     const ti = j.tool_input || {};
     if (name === "mcp__atlassian__atlassianUserInfo")
       return allow("read-only atlassianUserInfo identity lookup — /spec assignee resolution per hard rule 3 (no write risk)");
+    if (name === "mcp__atlassian__addCommentToJiraIssue")
+      return allow("new Jira comment (add-only) — class A per CLAUDE.md §11; hard rule 3 gates status + PR-open, not comments; append-only, history preserved");
     if (name === "mcp__atlassian__transitionJiraIssue") {
       const id = String((ti.transition && ti.transition.id) || "");
       if (id === "21" || id === "31")
