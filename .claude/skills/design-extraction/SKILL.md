@@ -105,3 +105,25 @@ source, never invent it.
   coordinates and stroke-width. For canonical geometry prefer a true full-size instance (or the
   master if addressable); if only a scaled instance is reachable, surface it as a design question —
   never silently normalize the geometry.
+
+**Encoding the retrieved glyph (verbatim).** §9 above covers _extraction_ (getting the vector out of
+Figma); this covers _encoding_ it into the component. The canon rule applies to geometry exactly as it
+does to tokens — encode what Figma gives, never adjust it to look tidy:
+
+- **Natural per-icon `viewBox` + real `stroke-width`, verbatim.** Each glyph keeps its own `viewBox`
+  and its own `stroke-width` from the export. Do **not** normalize the set to a unified box or a single
+  stroke weight — icons in one set legitimately differ (square and non-square glyphs, different stroke
+  widths), and that difference ships as-is.
+- **Size = rendered height, aspect ratio preserved.** A `size` prop sets the rendered height; width
+  follows the glyph's natural aspect ratio from its `viewBox`. No fixed box; never scale or stretch the
+  glyph to force uniform dimensions.
+- **Retrieval cascade for canonical geometry.** Take geometry from the placed **instance** (§9 above);
+  consult the **master** only if the instance is insufficient. A master may be unaddressable or return
+  `export: null` — then **fall back to the instance geometry verbatim** (and if only a scaled/non-canonical
+  instance is reachable, surface a design question per the scaled-instances bullet above — ship verbatim,
+  never silently normalize).
+- **Non-extractable geometry → STOP, never invent (hard rule 5).** If no available tool yields the vector
+  geometry, **STOP and ask the designer.** Never hand-author, guess, estimate, approximate, or normalize
+  path data, `viewBox`, or `stroke-width` to fill the gap. A glyph whose geometry cannot be retrieved is a
+  STOP — the same anti-fabrication rule that forbids inventing design tokens applies, unchanged, to glyph
+  geometry.
