@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.55 · Date: 2026-06-22 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.56 · Date: 2026-06-23 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -224,6 +224,19 @@ Status advances are **idempotent and forward-only** — the pipeline never moves
 - **husky + lint-staged, pre-commit hook:** `lint-staged` runs `eslint --fix` and `prettier --write` on staged files; then `tsc --noEmit`. Full test suite runs on **pre-push** (or CI), not pre-commit — keeps commits fast (<10 s) so the agent's frequent commits don't crawl.
 - Layering: Claude Code PostToolUse hook = fast feedback while generating; husky = enforcement gate (applies to humans and the agent equally); CI = final word. The agent must never bypass hooks (`--no-verify` is forbidden).
 - Setup is part of pipeline bootstrap (GUIDE Prompt 2); config files (`eslint.config.*`, `.prettierrc`, `.husky/`, `lint-staged` block) live in the repo and ship with the template as defaults.
+
+### Git steps — commit & push nodes
+
+The branch/merge model is hard rule 1 (branches only from up-to-date `dev`; PRs into `dev` squash-merged; human-only merge). The per-cycle commit/push steps — the orchestrator is the only git actor (subagents write only to the working tree):
+
+- **Node 1 — `/build`:** `git commit` component code + unit tests (+ any `@theme` / `docs/design-tokens.md` token additions) **only after the green gate** (lint/typecheck/test:run). This commit also sweeps the `/spec` artifacts already in the tree (`docs/specs/<KEY>.md`, design-questions) and the `metrics.csv` rows present so far.
+- **Node 2 — `/review` (CONDITIONAL):** if review produced fixes, `git commit` them after the gate is green again; if review found nothing to fix, there is **no** node-2 commit.
+- **Node 3 — `/ship` (a):** `git commit` the doc-writer artifacts (CHANGELOG, README-if-structural) before `gh pr create`.
+- **Node 4 — `/ship` (b):** `git commit` the ship-done metric row + cycle summary as `/ship`'s **last** action (after the PR is open).
+- **Push — `/ship`:** `git push -u origin <branch>` (**feature branch ONLY, never `dev`/`main`** — hard rule 1) at `/ship`; **re-push as later commits accrue** (the open PR auto-updates).
+- **Boundaries:** never `--no-verify`; a commit on a red gate is forbidden; commit/push the feature branch only. Ad-hoc correction commits are fine — squash-merge collapses all branch commits into one `dev` commit.
+- **Metric-row binding (DESCRIPTION, not a guarantee):** metric rows accrue in the working tree as each command runs; each command's commit-node sweeps whatever rows are present at commit time; `/spec`'s rows ride node 1. This describes current behavior — it is **not** a guarantee that each command commits its own rows; the deterministic alternative (each command commits its own rows in its own node) is a **deferred engine question (registry T2Y), not current behavior**. Reference cycle: FF-8; FF-9's grouping was an anomalous late-batch artifact.
+- Setup/maintenance commands (`/baseline`, `/design-fixes`) commit on their **approval checkpoint**, not these cycle nodes; `/tickets` makes no commit (Jira-only).
 
 ### Project structure (canonical; `/build` MUST follow it)
 

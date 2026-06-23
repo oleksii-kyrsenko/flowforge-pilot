@@ -31,3 +31,7 @@ derive the key from the current branch name (`flowforge/<JIRA-KEY>-...`).
   on a component and verifies it against the spec — an unjustified one is the stray-class
   bug (the global default should apply instead).
 - Fix the findings. Include the review report in the eventual PR description.
+- **Commit (node 2 — see CLAUDE.md §11 "Git steps — commit & push nodes"; CONDITIONAL):** if you
+  fixed findings, `git commit` them once the gate is green again (the orchestrator commits; the
+  reviewer subagent is read-only). If review found nothing to fix, there is no commit. No
+  `--no-verify`; feature branch only. **Do not push here — push is `/ship`.**

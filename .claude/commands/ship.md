@@ -15,7 +15,9 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
 1. **FIRST**: append `<JIRA-KEY>,ship,start,<TS>` to `docs/metrics/metrics.csv`
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
 2. **LAST**: append `<JIRA-KEY>,ship,done,<TS>`, then append a one-line cycle summary
-   to docs/progress-log.md (date, ticket, stages completed).
+   to docs/progress-log.md (date, ticket, stages completed), then **commit (node 4 — see
+   CLAUDE.md §11 "Git steps — commit & push nodes"):** `git commit` the ship-done metric row +
+   cycle summary as `/ship`'s last action (after the PR is open), and push (re-push).
 
 ## Preflight (at the start, BEFORE doc-writer/PR)
 
@@ -36,6 +38,11 @@ below (before opening the PR and before the status transition, hard rule 3).
   `README.md`, `docs/**` — never source): PR description (what / why / screenshots /
   acceptance-criteria checklist), changelog entry, and README updates only if the
   change is structural.
+- **Commit (node 3 — see CLAUDE.md §11 "Git steps — commit & push nodes"):** `git commit` the
+  doc-writer artifacts (CHANGELOG, README-if-structural) **before** opening the PR.
+- **Push (see CLAUDE.md §11 "Git steps — commit & push nodes"):** `git push -u origin <branch>` —
+  **feature branch ONLY, never `dev`/`main`** (hard rule 1); no `--no-verify`. Re-push as later
+  commits accrue (the open PR auto-updates).
 - Open a PR via `gh` with **base branch `dev`** (hard rule 1) and a conventional title
   `feat|fix|chore(<JIRA-KEY>): <description>` — with squash-merge the title becomes the
   dev commit message. **Confirm with the human before opening the PR** (hard rule 3).
