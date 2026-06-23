@@ -48,5 +48,9 @@ Per CLAUDE.md §11 "Ticket lifecycle & board statuses", check the ticket's statu
   E2E specs go in `tests/e2e/<JIRA-KEY>.spec.ts`.
 - Get `npm run lint`, `npm run typecheck`, and `npm run test:run` green before finishing.
   Never bypass hooks (`--no-verify` is forbidden).
+- **Commit (node 1 — see CLAUDE.md §11 "Git steps — commit & push nodes"):** after the gate is
+  green, `git commit` the component code + unit tests (+ any token additions). Only after green —
+  never a red gate; no `--no-verify`. This commit also carries the `/spec` artifacts and the
+  `metrics.csv` rows already in the working tree. **Do not push here — push is `/ship`.**
 
 Do not open a PR here — that is `/ship`.
