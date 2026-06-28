@@ -85,7 +85,7 @@ near-match token): confirmed by the human at the baseline checkpoint. /spec NEVE
 the primary font (a single ticket frame is too narrow a view); it consumes the confirmed
 primary font. Frames intentionally using a different family → design question.
 
-## 9. Icon & vector-glyph extraction
+## 9. Vector extraction — icons & decorative vectors
 
 Icons are vector geometry, not tokens — but the same canon rule applies: extract the real
 source, never invent it.
@@ -127,3 +127,51 @@ does to tokens — encode what Figma gives, never adjust it to look tidy:
   path data, `viewBox`, or `stroke-width` to fill the gap. A glyph whose geometry cannot be retrieved is a
   STOP — the same anti-fabrication rule that forbids inventing design tokens applies, unchanged, to glyph
   geometry.
+
+**Decorative vectors (separator lines, dividers, watermarks, background art) — the "raster ≠ unavailable"
+rule is NOT icon-only.** The same wrong-tool trap applies to ANY decorative vector, not just glyphs:
+`get_design_context` returns thin lines and background art as a raster `<img>`, and `get_variable_defs` may
+return `{}` — **neither means the value is unextractable.** Call `download_assets` with `format: "svg"` on
+the node; `rawImages: []` confirms true vector, and the fill / stroke / gradient lives in the SVG source.
+**Never flag a decorative vector's color or geometry "unextractable / not exposed" from a `get_design_context`
+raster (or an empty `get_variable_defs`) alone** — exhaust `download_assets svg` first.
+
+- **Split by uniqueness when applying it:** a **unique** decorative (a one-off watermark, a piece of
+  background art) → **ship the exported SVG as an asset** (no color extraction, no token, no question). A
+  **repeating** element (a site-wide divider/separator used in many places) → **read its color once** (from
+  the SVG source / a human Dev-Mode read) and **tokenize it** (one token, reused everywhere) — do not
+  re-question it per ticket.
+
+## 10. Source coverage — exhaust the sources before flagging "unextractable / undefined"
+
+A value, state, frame, or behaviour is "unextractable" or "undefined" **only after the available sources are
+exhausted**, never from the primary read alone. Before raising such a flag, check:
+
+- **The design-system / component-library file, not only the page/instance frame.** Component **states and
+  variants** (hover / focus / pressed / disabled / active) are usually defined in the design-system source as
+  variant sets, not on the placed instance in a page frame. If the project keeps a separate
+  design-system/library file, consult it for states/variants before declaring them "undefined."
+- **ALL of the ticket's frames, not just the primary one.** A ticket may carry several frames — desktop
+  **and** responsive/mobile/breakpoint variants. Check every frame the ticket references (and the design's
+  mobile/breakpoint frames) before declaring "no mobile frame" or a missing layout.
+- **The right tool for the node type** (§9): a raster `get_design_context` result on a vector →
+  `download_assets svg`; an empty `get_variable_defs` is not proof of absence.
+
+A FALSE "unextractable / undefined" — one that exhausting these sources would have resolved — is an
+extraction defect, not an honest design question.
+
+## 11. Behaviour derivation — don't freeze motion into a static snapshot
+
+When the design implies motion or a known interaction pattern but the static frame (and the MCP output) shows
+only a snapshot, **derive the pattern from context + the performance budget** — do not describe it as static:
+
+- A **repeating row of logos/items** → a **continuous marquee**; a **multi-item row with prev/next controls
+  and pagination** → a **carousel / paginated** behaviour. Read the snapshot for the _content_; derive the
+  _behaviour_ from the pattern.
+- **Performance budget (CLAUDE.md §11):** the rule is "no **unnecessary** client JS" — **not** zero JS. A
+  real interaction (carousel, marquee) is justified client-JS; a vetted library is acceptable. Do **not**
+  impose a zero-JS / CSS-only constraint the law does not, and **do not pin an implementation** in the spec —
+  note the behaviour and leave library-vs-CSS open.
+- Prototype **motion values** (easing / duration / trigger) are often **not** exposed by the static MCP
+  tools — capture what the design implies; flag genuinely **complex** motion "complex animation — human
+  decision" (existing rule), and mark unverifiable motion specifics as source-authority, never invent them.
