@@ -21,6 +21,12 @@ policy", "Performance, Next.js usage & SEO", "Token map maintenance", "Design qu
   token: extraction categories + the OTHER catch-all (report anything styled, never skip),
   aggregates-only census (value → count + 2–3 node-ids), normalization, near-match →
   both tokens as-is + a design question, correlated-counts rule, variant-diff rule.
+  **Before flagging anything "unextractable / undefined / static," exhaust the sources per
+  the skill:** raster ≠ unavailable for ALL vectors incl. decoratives (§9 — try
+  `download_assets svg`; never conclude "not exposed" from a `get_design_context` raster);
+  source coverage (§10 — check the design-system/library file for states/variants + ALL of
+  the ticket's frames incl. mobile, not just the primary frame); behaviour derivation (§11 —
+  derive marquee/carousel/etc. from the pattern + performance budget, not a static snapshot).
 - **seo** — for route/page-level tickets, derive the SEO requirements line from it.
 
 ## Specification — every section is mandatory (the safety net is law)
