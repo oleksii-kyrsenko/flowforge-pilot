@@ -145,20 +145,37 @@ raster (or an empty `get_variable_defs`) alone** — exhaust `download_assets sv
 ## 10. Source coverage — exhaust the sources before flagging "unextractable / undefined"
 
 A value, state, frame, or behaviour is "unextractable" or "undefined" **only after the available sources are
-exhausted**, never from the primary read alone. Before raising such a flag, check:
+exhausted**, never from the primary read alone. **This is not advisory — it is a mandatory ATTACHED
+ARTIFACT.** Before raising any "absent / unextractable / undefined / no counterpart" flag, produce and attach
+a coverage inventory to the spec, in order:
 
-- **The design-system / component-library file, not only the page/instance frame.** Component **states and
-  variants** (hover / focus / pressed / disabled / active) are usually defined in the design-system source as
-  variant sets, not on the placed instance in a page frame. If the project keeps a separate
-  design-system/library file, consult it for states/variants before declaring them "undefined."
-- **ALL of the ticket's frames, not just the primary one.** A ticket may carry several frames — desktop
-  **and** responsive/mobile/breakpoint variants. Check every frame the ticket references (and the design's
-  mobile/breakpoint frames) before declaring "no mobile frame" or a missing layout.
-- **The right tool for the node type** (§9): a raster `get_design_context` result on a vector →
-  `download_assets svg`; an empty `get_variable_defs` is not proof of absence.
+1. **All pages** of the relevant Figma file, listed (skip only genuinely empty/service pages, and say so —
+   "skipped: empty" is part of the inventory, not a silent omission).
+2. **All top-level nodes on each relevant page — of ALL types, not frames only** (frames, groups, sections,
+   canvases), each with **type + name + size** recorded. Multiple same-named top-level nodes at the same
+   level are COMMON (e.g. several page-root frames sharing a name) — enumerate and check ALL of them before
+   concluding a region/variant has no counterpart; stopping at the first name- or shape-matching candidate is
+   the exact defect this rule exists to prevent. **No width-anchoring** — never key a "this is the
+   mobile/variant one" conclusion to a specific pixel width; widths vary across files and tickets, identify
+   by content coverage, not a magic number.
+3. **The design-system / component-library file, not only the page/instance frame.** Component **states and
+   variants** (hover / focus / pressed / disabled / active) are usually defined in the design-system source as
+   variant sets, not on the placed instance in a page frame. If the project keeps a separate
+   design-system/library file, you **MUST** consult it for states/variants before declaring them "undefined"
+   or inventing a generic default/hover pair — states are read from the design-system source, never guessed
+   from the single placed instance.
+4. **ALL of the ticket's frames, not just the primary one.** A ticket may carry several frames — desktop
+   **and** responsive/mobile/breakpoint variants. Check every frame the ticket references (and the design's
+   mobile/breakpoint frames) before declaring "no mobile frame" or a missing layout.
+5. **The right tool for the node type** (§9): a raster `get_design_context` result on a vector →
+   `download_assets svg`; an empty `get_variable_defs` is not proof of absence.
+6. **A motion/prototype check** via `get_motion_context`, run before concluding a pattern has no
+   motion/animation — a "static" conclusion without this check run is itself an unbacked absence claim.
 
-A FALSE "unextractable / undefined" — one that exhausting these sources would have resolved — is an
-extraction defect, not an honest design question.
+**Only against this attached inventory** does an absence claim become valid. A FALSE "unextractable /
+undefined" — one that exhausting these sources would have resolved — is an extraction defect; an absence
+claim with **no attached inventory at all** is the same defect, regardless of whether the claim happens to be
+true — the inventory is the evidence, not an afterthought.
 
 ## 11. Behaviour derivation — don't freeze motion into a static snapshot
 
@@ -175,3 +192,36 @@ only a snapshot, **derive the pattern from context + the performance budget** �
 - Prototype **motion values** (easing / duration / trigger) are often **not** exposed by the static MCP
   tools — capture what the design implies; flag genuinely **complex** motion "complex animation — human
   decision" (existing rule), and mark unverifiable motion specifics as source-authority, never invent them.
+- A vetted default implementation per behaviour pattern lives in the companion
+  `behaviour-library-map.md` — consult it for the informational default; cite it as reference in the
+  spec, never as a pin (the boundary above still holds: leave library-vs-CSS open).
+
+## 12. Breakpoint continuity — classify every cross-mockup difference as continuous or discrete
+
+Each mockup fixes a **known point**, not a range. Reading two known breakpoints correctly (§10) says
+nothing about what happens IN BETWEEN them — that is a separate, genuinely distinct gap this section
+closes.
+
+- **The principle:** between any two known mockup points, and beyond the narrowest/widest known point,
+  layout must degrade gracefully — text stays readable, images never become disproportionately huge or
+  tiny, nothing looks "broken" at any width in between or beyond. Achieve this with modern CSS (fluid
+  typography via `clamp()`, fluid spacing via `min()`/`max()`, `aspect-ratio` for images instead of fixed
+  px, container queries where appropriate) — never by defaulting to a small fixed set of `@media`
+  breakpoints that copy-paste two discrete states with nothing considered for the gap.
+- **Mandatory classification:** when comparing two known mockups of the SAME pattern, classify EVERY
+  observed property/structural difference as one of:
+  - **CONTINUOUS (interpolate)** — e.g. font-size, spacing, image scale. Specify as fluid CSS across the
+    whole range, not two fixed values with nothing between them.
+  - **DISCRETE (layout-mode switch at a threshold)** — e.g. a multi-column grid becoming a stacked list,
+    a horizontal nav becoming a hamburger menu. These switch AT a named breakpoint, never interpolate.
+- **A spec stating only "mobile: X, desktop: Y" without this classification is INCOMPLETE** — `/build`
+  cannot safely fill the gap without knowing which kind of difference it is implementing. An unclassified
+  cross-mockup difference, on any ticket where two or more same-pattern mockups were read, is a defect of
+  the SAME SEVERITY as an unbacked §10 absence claim.
+- **Reference patterns (illustrative, not exhaustive):** a row of items reflowing into a vertically
+  stacked list at a narrower breakpoint is a DISCRETE layout-mode switch, not an interpolation of the
+  same grid. A divider/rule built with a flex-basis fill (e.g. `flex-[1_0_0]`) that naturally occupies
+  available width at any viewport, with no discrete breakpoint switch, is a CONTINUOUS pattern — recognize
+  and call this out explicitly rather than leaving it to chance.
+- **Below-narrowest / above-widest:** the same fluid principle continues past the extremes of the known
+  mockups — graceful degradation, never a hard cutoff at the edge of the design file's coverage.
