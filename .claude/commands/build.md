@@ -28,12 +28,34 @@ Per CLAUDE.md §11 "Ticket lifecycle & board statuses", check the ticket's statu
   before transition **31** (In Progress) and proceeding. Human confirm is required only on
   this anomaly.
 
+## Reuses-dependency gate (build-threshold)
+
+Before proceeding, check every ticket named in the Jira description's **Reuses** field: each one
+must be **BUILT — merged code on `dev`**, not merely spec'd. Missing → **STOP**, name the
+unbuilt dependency/dependencies and ask. This is the same gate as `/spec`'s Reuses-dependency
+gate, at its stricter (build) threshold — one gate, two thresholds, not a duplicate rule.
+
 ## Do
 
 - Update the base first: `git fetch origin && git checkout dev && git pull`.
 - Create branch `flowforge/<JIRA-KEY>-<slug>` from up-to-date `dev` (hard rule 1).
 - Implement the component per the approved spec, following the canonical `src/`
   structure. Server-first RSC; `'use client'` only at leaf interactivity.
+- **Derived behaviour (carousel / marquee / accordion / etc.):** consult
+  `.claude/skills/design-extraction/behaviour-library-map.md` for the vetted default
+  implementation; use it unless there is a documented reason to deviate (a cheap/reversible
+  deviation is reported, a real tradeoff goes to the human). A pattern with no map entry gets
+  one ADDED to the map in this cycle, under human confirm — never an unrecorded ad-hoc pick.
+- **Fluid/adaptive CSS as the default (breakpoint continuity):** implement per the spec's
+  CONTINUOUS/DISCRETE classification — CONTINUOUS properties (font-size, spacing, image scale)
+  use fluid CSS across the FULL range between (and beyond) the known mockup points: `clamp()`
+  for fluid typography, `min()`/`max()` for fluid spacing, `aspect-ratio` for images instead of
+  fixed px, container queries where the component's own size should drive the switch. DISCRETE
+  properties (layout-mode switches) switch at the specific threshold the spec names, not
+  before/after. **Never copy-paste two fixed `@media` states with nothing engineered for the gap
+  between them.** Below the narrowest or above the widest known mockup, the same fluid principle
+  continues — graceful degradation, no hard cutoff. A spec lacking this classification is
+  incomplete — STOP and ask rather than guessing which kind of difference it is.
 - Apply token additions from the spec to the Tailwind theme source (v4: the `@theme`
   block in the global stylesheet; v3: `theme.extend` in tailwind.config) — see CLAUDE.md
   §11 Token map maintenance — AND append the rows to the Design token map in

@@ -43,16 +43,27 @@ supply the frame or confirm the ticket is intentionally non-UI. An honest non-UI
 (logic/hook, no UI content) proceeds normally: UI sections N/A with reasons, no Figma call,
 no invented tokens.
 
+## Reuses-dependency gate (spec-threshold)
+
+Before proceeding, check every ticket named in the Jira description's **Reuses** field: each one
+must have an **existing spec** (`docs/specs/<KEY>.md` — it need not be built or even approved yet).
+Missing → **STOP**, name the missing dependency spec(s) and ask. This is one gate with two
+thresholds — the stricter, built/merged threshold applies at `/build`, not here.
+
 ## Do
 
 - Delegate to the **analyst** subagent (read-only + MCP). It reads the ticket via
   Atlassian MCP and the mockup via Figma MCP, and applies the **design-extraction**
   and **seo** skills.
 - Produce the specification with every mandatory section from CLAUDE.md §11:
-  purpose, typed props, states (from the style-guide variant set, matched by what
-  CHANGES between variants), breakpoints, design tokens (dedup per Token map
-  maintenance — near-matches never collapsed silently → design questions), an
-  **Animations** line, a **Reuse check** line, a11y, acceptance criteria, a
+  purpose, typed props, a **Coverage inventory** line (pages → top-level nodes of ALL
+  types → Components-file states/variants → motion check; every absence claim must
+  cite it, or it is a defect), states (from the style-guide variant set, matched by what
+  CHANGES between variants), breakpoints (when 2+ mockups of the same pattern were read,
+  classify every difference CONTINUOUS or DISCRETE — an unclassified difference is a
+  defect), design tokens (dedup per Token map maintenance — near-matches never collapsed
+  silently → design questions), an **Animations** line (cite the behaviour→library map
+  default as reference, never a pin), a **Reuse check** line, a11y, acceptance criteria, a
   **Test plan** line, and an **SEO requirements** line for route/page-level tickets.
 - Post the spec as a Jira comment using the **adf-formatting** skill
   (`contentFormat: "adf"`, never raw Markdown — hard rule 8) and duplicate it to
@@ -62,5 +73,6 @@ no invented tokens.
 ## Then STOP
 
 Per hard rule 2, after posting the spec STOP and wait for explicit human approval.
-Do not start `/build`. (Posting the Jira comment is a Jira write — per hard rule 3,
-confirm before posting.)
+Do not start `/build`. (The Jira comment itself is auto-posted — a NEW comment is
+class A per hard rule 3/§9.1, no confirm; the confirm gate here is for the human's
+spec approval, not for posting.)
