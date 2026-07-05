@@ -34,6 +34,40 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   no longer present in any source ("deprecate?" question — never delete silently).
   Unchanged mockups → print "No changes against the approved map", change no files, open
   no PR.
+- **Raw-transcript logging (for the completeness gate below):** as you call
+  `get_design_context`/`download_assets`/`get_variable_defs` during extraction, append
+  each raw tool response verbatim to a scratch transcript file (e.g.
+  `<scratchpad>/baseline-raw-transcript.txt`) — not a summary, the actual returned text.
+  This is required input for the mechanical completeness gate; without it, that gate has
+  nothing to check against.
+
+## Mechanical citation gate (before presenting the checkpoint)
+
+Write the full draft map/pending/questions text to a temporary file, then run:
+`.claude/scripts/validate-checkpoint-citations.sh <temp-file>`
+
+If it exits non-zero: do NOT present the checkpoint yet. Re-verify every flagged line
+against the actual Figma source via a real tool call (never from memory or aggregation
+across multiple nodes) — add the correct node-id citation, or correct the value if the
+re-check shows it was wrong. Re-run the script until it passes, THEN present the
+checkpoint. This is a mechanical, non-negotiable gate — it does not replace judgment on
+whether a cited value is itself correct, only whether every value-bearing line is cited
+at all.
+
+## Mechanical completeness gate (before presenting the checkpoint)
+
+Run: `.claude/scripts/validate-checkpoint-completeness.sh <raw-transcript-file> <draft-file>`
+(the same draft file used for the citation gate above; the raw-transcript file is the one
+built per the logging requirement above).
+
+If it exits non-zero: do NOT present the checkpoint yet. For each flagged value, either
+(a) add it to the map with its correct role/token, re-verifying against the real source if
+its meaning is unclear, or (b) if it's a legitimate exclusion (an out-of-scope decorative
+asset already noted in the page inventory, or a duplicate instance of an already-recorded
+value), add an explicit one-line exclusion note in the checkpoint saying so — never drop it
+silently a second time. Re-run the script until it passes, THEN present the checkpoint.
+This gate catches values silently OMITTED from the map; it does not verify that a value
+already in the map is itself correct (that remains human/tool-call verification).
 
 ## CHECKPOINT, then STOP
 

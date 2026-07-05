@@ -50,6 +50,16 @@ must have an **existing spec** (`docs/specs/<KEY>.md` — it need not be built o
 Missing → **STOP**, name the missing dependency spec(s) and ask. This is one gate with two
 thresholds — the stricter, built/merged threshold applies at `/build`, not here.
 
+## Primary-font fallback check (before producing the spec)
+
+Check `docs/design-tokens.md` for an existing confirmed primary font. If one already exists,
+skip this — proceed normally, consuming it (design-extraction skill §8). If NONE exists yet
+(this project has not run `/baseline`), perform the fallback determination per skill §8:
+tally font families across this ticket's own frame(s) only, propose the most frequent as a
+NARROW-SOURCE candidate, and include a **Primary font (narrow-source)** line in the spec
+output, clearly labeled as based on a single ticket's frames rather than a full-file census.
+This is confirmed at the normal spec-approval checkpoint below — not a separate gate.
+
 ## Do
 
 - Delegate to the **analyst** subagent (read-only + MCP). It reads the ticket via

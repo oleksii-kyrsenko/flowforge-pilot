@@ -41,6 +41,12 @@ line per category and are **never tokenized** — they become design questions (
 upcoming). Precedent: `#ff3d2e`, present only on two hidden layers, was kept out of the token
 map and recorded as a design question.
 
+**Citation completeness check.** Before finalizing any section (including OTHER catch-all),
+verify every reported value carries node-id citations per this section's format. A line
+without citations is not a stylistic omission — it's a signal the value wasn't
+independently re-checked before being written down, and should be re-verified before the
+checkpoint is presented.
+
 ## 3. Normalization (for dedup comparison only — never to rewrite the value)
 
 - Colors: lowercase hex; expand shorthand; normalize alpha representation.
@@ -56,6 +62,23 @@ map and recorded as a design question.
 - **Near-match** (close but not equal — e.g. two close grays) → the new value becomes a
   token **AS-IS** under a descriptive name, marked **"⚠ pending"**, AND a **design question**
   is appended. NEVER collapse silently. NEVER ask the human operator to arbitrate design.
+
+  **Near-match scoping — same slot, not just similar value.** A pair of values qualifies as a near-match
+  (triggering the rule above) ONLY when they occupy the SAME semantic slot: the same named role on the
+  same component, or the same property across instances/states of the literally same component — and
+  differ numerically. This is the case where the difference could be authoring drift within one
+  continuous decision.
+
+  A pair does NOT qualify as a near-match — no question, no "⚠ pending" — when the values occupy
+  DIFFERENT slots, even if numerically or visually close:
+  - **Different named/semantic roles** (e.g. "error" vs "primary" — each is its own decision,
+    regardless of hue proximity).
+  - **The same property on DIFFERENT components or variants** (e.g. the filled button's shadow vs the
+    outline button's shadow — two independent decisions, not one decision expressed twice).
+
+  Record each such value as its own token, under its own name, with no question — proximity in value
+  space alone is never evidence of drift.
+
 - **Match with a previously REMOVED value** → recreate the token (mockup is canon) and
   append a follow-up design question referencing the original removal.
 
@@ -77,18 +100,45 @@ Semantic (role) names only where the source proves the role (a Figma variable/st
 or clear component usage). Otherwise use descriptive names (e.g. `orange-600`). Renames
 happen via `/design-fixes` only. Raw values never appear in component code.
 
-## 8. Primary font determination (baseline, not /spec)
+## 8. Primary font determination — baseline-preferred, with a /spec fallback when no baseline has run
 
-During the census, tally font families by frequency across all swept frames. The most
-frequent family is the PRIMARY-FONT CANDIDATE — a hypothesis, not a verdict (like a
-near-match token): confirmed by the human at the baseline checkpoint. /spec NEVER determines
-the primary font (a single ticket frame is too narrow a view); it consumes the confirmed
-primary font. Frames intentionally using a different family → design question.
+Primary font determination resolves to exactly ONE confirmed value in `docs/design-tokens.md`;
+there are two paths to fill it depending on which command runs first on a given project —
+never two independent determinations in force at once.
+
+- **Preferred path — full-coverage census (`/baseline`):** during the census, tally font
+  families by frequency across ALL swept frames. The most frequent family is the
+  PRIMARY-FONT CANDIDATE — a hypothesis, not a verdict (like a near-match token): confirmed
+  by the human at the baseline checkpoint, then recorded in `docs/design-tokens.md`.
+- **Fallback path — `/spec` runs before any `/baseline` has confirmed a value:** `/baseline`
+  is not a mandatory project step — a project may go straight to `/spec`. If
+  `docs/design-tokens.md` has no confirmed primary font when `/spec` starts, `/spec` MUST NOT
+  silently proceed without one and MUST NOT silently defer it either: determine a candidate
+  from ONLY this ticket's own frame(s), label it explicitly as a NARROW-SOURCE hypothesis (a
+  single ticket's frames, not a full-file census — weaker evidence than the baseline path;
+  say so in the spec text). Present it for confirmation at the SAME spec-approval checkpoint
+  (hard rule 2) — this is not a separate gate.
+- Once ANY value is confirmed (by either path) it is recorded in `docs/design-tokens.md`;
+  every subsequent `/spec` run on that project simply CONSUMES it — `/spec` never
+  re-determines a value that already exists there. If a LATER `/baseline` is run on the same
+  project, a differing full-coverage result supersedes a narrow-source one — treat this as a
+  "canon moved" case per `/baseline`'s RE-RUN delta mode, not a silent conflict.
+- Frames intentionally using a different family → design question (unchanged).
 
 ## 9. Vector extraction — icons & decorative vectors
 
 Icons are vector geometry, not tokens — but the same canon rule applies: extract the real
 source, never invent it.
+
+This extraction happens now, in whichever pass is currently reading the icon — there is
+no "defer to /build" or "defer to the ticket that uses it" exception for an icon's STYLED
+PROPERTIES (fill/stroke color, opacity, gradient, blur — anything on §1's extraction
+list). §1's "extract every styled property, the list is a structure not a filter" applies
+to icons exactly as to every other element. What MAY legitimately wait for a per-ticket
+read is raw PATH GEOMETRY (`d=`, `viewBox`) when a broad sweep (like `/baseline`) is
+surveying many icons and a full geometry pull for each would be excessive — but even then,
+the icon's per-state COLOR (a design token, same as any border or fill) is extracted now,
+not deferred alongside the geometry.
 
 - **Retrieve the vector via `download_assets` with `format: "svg"`** on the PLACED-INSTANCE node
   (the master is often not page-addressable). The export is genuine vector: real path data
@@ -142,7 +192,26 @@ raster (or an empty `get_variable_defs`) alone** — exhaust `download_assets sv
   the SVG source / a human Dev-Mode read) and **tokenize it** (one token, reused everywhere) — do not
   re-question it per ticket.
 
+**When Bash/WebFetch is available in the running context** (e.g. orchestrator-run commands like
+`/baseline` and `/design-fixes`, which don't dispatch a tool-restricted sub-agent) — resolve to RAW BYTES
+via `curl` on the returned export URL, not a `WebFetch` paraphrase. A `WebFetch` summary is generated by an
+intermediary model and is not raw evidence — treat it as a hint at most, and always follow up with `curl`
+before recording a value as confirmed. This does not create a new capability requirement — it only governs
+how an already-available tool must be used; a context without Bash (the `analyst` sub-agent under `/spec`,
+restricted per its own tool list) remains bound by the STOP-and-ask rule above, unchanged.
+
 ## 10. Source coverage — exhaust the sources before flagging "unextractable / undefined"
+
+**Visual structure recognition — before any per-node extraction.** A component/style-guide file exists
+specifically to show, for each interactive element category, its state set side-by-side (buttons/links/
+icons: Normal/Hover/Press; inputs: their own broader set; a carousel: its own set; etc.) — this is the
+file's basic organizing principle, not a pattern to infer. Before reading individual nodes, get a full
+screenshot of each relevant showcase frame and visually identify: how many distinct component-category
+panels exist, and what state-columns each panel demonstrates. Treat a state-column header as governing
+the FULL set of component instances visually grouped beneath it in that panel. This applies equally to
+`/baseline` (reading a whole design-system file) and to `/spec` (reading a component's state set for one
+ticket) — whichever command is doing the reading, look at the panel as a human would before computing
+anything from individual node positions or text.
 
 A value, state, frame, or behaviour is "unextractable" or "undefined" **only after the available sources are
 exhausted**, never from the primary read alone. **This is not advisory — it is a mandatory ATTACHED
@@ -171,6 +240,48 @@ a coverage inventory to the spec, in order:
    `download_assets svg`; an empty `get_variable_defs` is not proof of absence.
 6. **A motion/prototype check** via `get_motion_context`, run before concluding a pattern has no
    motion/animation — a "static" conclusion without this check run is itself an unbacked absence claim.
+7. **Exhaustive, evidence-based label correlation — reasoning, not a formula.** When a coverage sweep
+   finds unassigned text nodes resembling state names (Normal/Hover/Press/Active, etc.), correlate them
+   to component instances by REASONING through the structure the way a human reading the design file
+   would — not by applying a fixed coordinate formula. A label may legitimately apply to ONE instance, to
+   a WHOLE GROUP of stacked/columned instances demonstrated together in that state (a design-system
+   reference file commonly shows many unrelated component types under one shared state heading), or to
+   NONE at all — all three are valid outcomes, and none should be forced.
+
+   Weigh multiple, converging signals together, not position alone:
+   - **Structural grouping** — does the candidate sit within an evident column/row/section the label
+     heads, however many instances that grouping contains and however far it extends?
+   - **Figma-internal style/variable names** that echo the state (e.g. a fill or stroke annotated
+     "Gradient/Hover", "Gradient/Press", or a bound "Primary" variable) — corroborating evidence, not
+     proof by itself.
+   - **Plausibility** — does this component type ever have this state, and does the visual content
+     support it?
+
+   Do not stop at the first plausible match if the same evident grouping contains further, still-unassigned
+   instances — follow the grouping to its natural end (a new label, a different grouping, or unrelated
+   content), not to an arbitrary distance cutoff. Equally, do not force a match where the evidence is
+   genuinely absent or contradictory — an honest "no applicable label found, per available
+   structural/style evidence" is a correct conclusion, not a failure.
+
+   **Self-audit before writing "unexplained."** Before recording ANY property difference (opacity, color,
+   or otherwise) as an unexplained inconsistency or open design question, cross-check it against every
+   column/grouping ALREADY established elsewhere in the same coverage sweep — a difference that
+   structurally coincides with an already-identified grouping is a state finding, not a mystery, even if
+   it wasn't the component the grouping was first noticed on. An "unexplained inconsistency" design
+   question that a five-minute cross-check against already-gathered data would have resolved is the same
+   defect as an unbacked absence claim.
+
+8. **Decorative-vector children within an already-swept parent are not automatically covered.** Marking
+   a parent frame/instance (a Header, a component showcase frame, a card) "swept" in the coverage
+   inventory does NOT mean every descendant decorative vector — thin lines, dividers, hairlines,
+   background shapes generically named "Rectangle N"/"Line N"/"Vector" — was individually queried.
+   Before excluding such a child from the token map, explicitly call `get_design_context` (and
+   `download_assets svg` per §9 if it renders as a raster `<img>` reference) on it directly — a
+   parent-level sweep does not implicitly cover it. This applies with equal force on a RE-RUN: an
+   element correctly tokenized in a PRIOR baseline run and now silently absent from the current one is
+   a coverage REGRESSION, not evidence the element stopped existing — cross-check the current run's
+   decorative-vector coverage against any prior approved checkpoint for the same file before concluding
+   an element is out of scope.
 
 **Only against this attached inventory** does an absence claim become valid. A FALSE "unextractable /
 undefined" — one that exhausting these sources would have resolved — is an extraction defect; an absence
@@ -225,3 +336,17 @@ closes.
   and call this out explicitly rather than leaving it to chance.
 - **Below-narrowest / above-widest:** the same fluid principle continues past the extremes of the known
   mockups — graceful degradation, never a hard cutoff at the edge of the design file's coverage.
+
+## 13. Extraction execution — concurrency & rate-limit handling
+
+The Figma MCP enforces an account/seat-level tool-call quota (both a per-day and a
+per-minute cap). This constrains HOW extraction work is executed, not what to extract.
+
+- **Do not fan out wide-parallel extraction sub-agents against the Figma MCP.** A 6-way
+  parallel fan-out has been observed to exhaust the shared quota within a few calls
+  (session 11, `/baseline`). Extract multiple component groups either **sequentially**, or
+  with **limited concurrency (≤2 sub-agents at once)**.
+- **On a rate-limit error, STOP that sub-task immediately.** Report exactly what was
+  extracted before the limit hit and what is missing, flagged as a **tool-access gap, not
+  a design absence** (§10 applies here too — a rate-limit STOP is not evidence a value
+  doesn't exist). Never retry the same call in a loop hoping the limit clears mid-session.

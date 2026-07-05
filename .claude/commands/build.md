@@ -61,6 +61,15 @@ gate, at its stricter (build) threshold — one gate, two thresholds, not a dupl
   §11 Token map maintenance — AND append the rows to the Design token map in
   docs/design-tokens.md in the SAME branch (docs/design-tokens.md ↔ the `@theme` block
   must never diverge). No raw values in component code.
+- **Primary-font application (idempotent guard, CLAUDE.md §11 Token map maintenance):** if
+  this ticket has a Figma source (one or more frames) and `docs/design-tokens.md` carries a
+  confirmed primary font (from `/baseline` or from this ticket's own `/spec` fallback
+  determination), ensure it is wired ONCE, globally, via `next/font` in the root layout, set
+  as the document default on `<body>` — never as a per-component class. Idempotent: if
+  already correctly wired, this is a no-op — do not re-apply or duplicate the import. If the
+  approved spec proposed a NEW confirmed value via its fallback line (not yet in
+  `docs/design-tokens.md`), write it there in this same commit, alongside the other token
+  additions. Pure-logic tickets with no Figma frame do not trigger this step.
 - **Animations:** implement CSS transitions and simple keyframes only; anything
   flagged "complex animation" in the spec stays a human decision — do not implement it.
 - **Icons / vector assets:** obtain glyph geometry via the design-extraction skill's vector-asset
