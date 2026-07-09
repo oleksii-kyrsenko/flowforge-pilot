@@ -34,6 +34,19 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   no longer present in any source ("deprecate?" question — never delete silently).
   Unchanged mockups → print "No changes against the approved map", change no files, open
   no PR.
+- **Raw-transcript logging (for the completeness gate below):** as you call
+  `get_design_context`/`download_assets`/`get_variable_defs` during extraction, append
+  each raw tool response verbatim to a scratch transcript file (e.g.
+  `<scratchpad>/baseline-raw-transcript.txt`) — not a summary, the actual returned text.
+  This is required input for the mechanical completeness gate; without it, that gate has
+  nothing to check against.
+
+## Mechanical verification gates (before presenting the checkpoint)
+
+Run all four gates defined in the design-extraction skill §14, in order (citation →
+completeness → deep-read → near-match scoping), against the draft file (and the raw
+transcript, for the gates that need it). Fix any failure per skill §14's guidance and
+re-run until all four pass, THEN present the checkpoint.
 
 ## CHECKPOINT, then STOP
 
@@ -50,6 +63,7 @@ wait for explicit approval (hard rule 2).
   stylesheet; v3: `theme.extend` in tailwind.config) AND fill the Design token map in
   `docs/design-tokens.md` in place with provenance per token — the map ↔ theme source
   must never diverge.
+- **Scaffold audit** (CLAUDE.md §11 Token map maintenance) — applies here, at APPLY time.
 - Create/update `docs/design-questions.md`; log the run in docs/progress-log.md.
 - Open a PR to `dev` (humans merge — hard rule 1). **Confirm before opening the PR**
   (hard rule 3). Never target `main`.

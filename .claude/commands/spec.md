@@ -50,6 +50,16 @@ must have an **existing spec** (`docs/specs/<KEY>.md` — it need not be built o
 Missing → **STOP**, name the missing dependency spec(s) and ask. This is one gate with two
 thresholds — the stricter, built/merged threshold applies at `/build`, not here.
 
+## Primary-font fallback check (before producing the spec)
+
+Check `docs/design-tokens.md` for an existing confirmed primary font. If one already exists,
+skip this — proceed normally, consuming it (design-extraction skill §8). If NONE exists yet
+(this project has not run `/baseline`), perform the fallback determination per skill §8:
+tally font families across this ticket's own frame(s) only, propose the most frequent as a
+NARROW-SOURCE candidate, and include a **Primary font (narrow-source)** line in the spec
+output, clearly labeled as based on a single ticket's frames rather than a full-file census.
+This is confirmed at the normal spec-approval checkpoint below — not a separate gate.
+
 ## Do
 
 - Delegate to the **analyst** subagent (read-only + MCP). It reads the ticket via
@@ -69,6 +79,18 @@ thresholds — the stricter, built/merged threshold applies at `/build`, not her
   (`contentFormat: "adf"`, never raw Markdown — hard rule 8) and duplicate it to
   `docs/specs/<JIRA-KEY>.md`. Append any new design questions to
   `docs/design-questions.md`.
+
+## Mechanical verification gates (orchestrator step, before the spec-approval checkpoint)
+
+The **analyst** subagent has no `Bash` and cannot run these gates itself. Require the
+analyst to write its raw tool-call transcript AND its draft spec text to scratchpad files
+(same logging requirement as skill §14) before returning control. Once the analyst
+returns, the ORCHESTRATOR runs all four gates from skill §14 against those files, exactly
+as `/baseline` does. Fix any failure per skill §14's guidance (re-verify against the real
+source, correct the draft, re-run) before presenting the spec for approval. This applies
+whether `/baseline` has run on this project yet or not — `/spec` may be the first command
+run on a project (see skill §8's fallback path), so it cannot assume the gates were
+already exercised by an earlier `/baseline`.
 
 ## Then STOP
 
