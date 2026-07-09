@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.72 · Date: 2026-07-05 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.76 · Date: 2026-07-09 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -316,6 +316,22 @@ The filled token map (all rows, provenance, raw values, `⚠ pending` marks) liv
 - Semantic (role) names only where the source proves the role (variable/style name, component usage); otherwise descriptive names (orange-600); renames happen via /design-fixes only.
 - On spec approval, `/build` applies additions to the Tailwind theme source (v4: `@theme` in the global stylesheet; v3: `theme.extend` in tailwind.config) AND appends the rows to docs/design-tokens.md in the same PR — docs/design-tokens.md ↔ the `@theme` block (here, in `src/app/globals.css`) must never diverge; `/review` verifies. Raw values are forbidden in component code; each addition is logged in docs/progress-log.md.
 - **Primary-font application (idempotent guard):** The confirmed primary font is applied ONCE, globally, as the document default — loaded via next/font in the root layout and set on `<body>` — never as a per-component class. Idempotent: if already correctly wired, it is a no-op. Fires only when a UI source exists (baseline with frames / UI-with-frame ticket); pure-logic work does not trigger it.
+- **Scaffold audit (whenever `globals.css`/`layout.tsx` is written by `/baseline`'s APPLY,
+  `/build`'s token/primary-font application, or `/design-fixes`' token-VALUE-change mode):**
+  adding new tokens must not leave pre-existing scaffold defaults that contradict
+  already-confirmed project facts sitting unconnected alongside them. Concretely: if the
+  confirmed theme has no light-mode variant, remove the inherited
+  `prefers-color-scheme: dark` toggle and the light-mode `:root` values, wiring the base
+  background/foreground variables directly to the confirmed dark-theme tokens — never
+  leave both the old scaffold pair and the new named tokens coexisting unconnected (the
+  old pair silently wins at render time). If a font family (e.g. Geist Mono) has zero
+  usages anywhere in `src/` and no confirmed role in the design source, remove its
+  import/variable/theme entry entirely — an unused, unnecessarily loaded web font is a
+  genuine Core-Web-Vitals/bundle-size violation (ties to the Performance budget standard),
+  not a cosmetic nit. Scope: this audit is NOT exhaustive scaffold-hunting on every run —
+  it is limited to the SAME file(s) the command is already writing to for token/font
+  application, checked against facts already confirmed in `docs/design-tokens.md` at the
+  time of writing.
 
 ### Design questions (docs/design-questions.md)
 

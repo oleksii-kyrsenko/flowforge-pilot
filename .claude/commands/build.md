@@ -70,11 +70,21 @@ gate, at its stricter (build) threshold — one gate, two thresholds, not a dupl
   approved spec proposed a NEW confirmed value via its fallback line (not yet in
   `docs/design-tokens.md`), write it there in this same commit, alongside the other token
   additions. Pure-logic tickets with no Figma frame do not trigger this step.
+- **Scaffold audit** (CLAUDE.md §11 Token map maintenance) — applies here too, whenever
+  this step touches `globals.css`/`layout.tsx`.
 - **Animations:** implement CSS transitions and simple keyframes only; anything
   flagged "complex animation" in the spec stays a human decision — do not implement it.
 - **Icons / vector assets:** obtain glyph geometry via the design-extraction skill's vector-asset
   method; if vector geometry cannot be retrieved by any available tool → STOP and ask, never
-  hand-author or guess path geometry (hard rule 5, at the build layer).
+  hand-author or guess path geometry (hard rule 5, at the build layer). **Mechanical check
+  (orchestrator step, before accepting geometry or the STOP above):** log the raw icon-related
+  tool-call transcript for this ticket's nodes (same logging requirement as skill §14) and run
+  the skill §14 Deep-read gate (`validate-checkpoint-deep-read.sh`) against it — the orchestrator
+  has `Bash` here, so there is no analyst-style access gap. This confirms `download_assets` was
+  actually called for every node where `get_design_context` returned a raster reference, before
+  either finalizing extracted geometry or concluding the STOP is warranted. Gates 1/2/4 do not
+  apply at `/build` — no color/token checkpoint draft is produced here (skill §9: color/opacity
+  extraction happens at `/baseline`/`/spec` time, not `/build`).
 - Generate tests per the spec's Test plan (unit always; integration/e2e as specified).
   E2E specs go in `tests/e2e/<JIRA-KEY>.spec.ts`.
 - Get `npm run lint`, `npm run typecheck`, and `npm run test:run` green before finishing.

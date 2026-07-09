@@ -80,6 +80,18 @@ This is confirmed at the normal spec-approval checkpoint below — not a separat
   `docs/specs/<JIRA-KEY>.md`. Append any new design questions to
   `docs/design-questions.md`.
 
+## Mechanical verification gates (orchestrator step, before the spec-approval checkpoint)
+
+The **analyst** subagent has no `Bash` and cannot run these gates itself. Require the
+analyst to write its raw tool-call transcript AND its draft spec text to scratchpad files
+(same logging requirement as skill §14) before returning control. Once the analyst
+returns, the ORCHESTRATOR runs all four gates from skill §14 against those files, exactly
+as `/baseline` does. Fix any failure per skill §14's guidance (re-verify against the real
+source, correct the draft, re-run) before presenting the spec for approval. This applies
+whether `/baseline` has run on this project yet or not — `/spec` may be the first command
+run on a project (see skill §8's fallback path), so it cannot assume the gates were
+already exercised by an earlier `/baseline`.
+
 ## Then STOP
 
 Per hard rule 2, after posting the spec STOP and wait for explicit human approval.

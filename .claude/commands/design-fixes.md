@@ -45,6 +45,8 @@ don't match.
   - token **VALUE** change → edit the map + the Tailwind theme source (v4: the `@theme` block
     in the global stylesheet; v3: `theme.extend` in tailwind.config) — see CLAUDE.md §11 Token
     map maintenance — only (usages update automatically);
+  - **Scaffold audit** (CLAUDE.md §11 Token map maintenance) — applies here too, whenever
+    this mode writes to the Tailwind theme source.
   - token **COLLAPSE / RENAME** → edit map/config AND replace the affected classes across
     `src/` (a config-only change would break the build);
   - **DELETE** → remove the token and its usages;

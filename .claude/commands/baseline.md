@@ -41,33 +41,12 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   This is required input for the mechanical completeness gate; without it, that gate has
   nothing to check against.
 
-## Mechanical citation gate (before presenting the checkpoint)
+## Mechanical verification gates (before presenting the checkpoint)
 
-Write the full draft map/pending/questions text to a temporary file, then run:
-`.claude/scripts/validate-checkpoint-citations.sh <temp-file>`
-
-If it exits non-zero: do NOT present the checkpoint yet. Re-verify every flagged line
-against the actual Figma source via a real tool call (never from memory or aggregation
-across multiple nodes) — add the correct node-id citation, or correct the value if the
-re-check shows it was wrong. Re-run the script until it passes, THEN present the
-checkpoint. This is a mechanical, non-negotiable gate — it does not replace judgment on
-whether a cited value is itself correct, only whether every value-bearing line is cited
-at all.
-
-## Mechanical completeness gate (before presenting the checkpoint)
-
-Run: `.claude/scripts/validate-checkpoint-completeness.sh <raw-transcript-file> <draft-file>`
-(the same draft file used for the citation gate above; the raw-transcript file is the one
-built per the logging requirement above).
-
-If it exits non-zero: do NOT present the checkpoint yet. For each flagged value, either
-(a) add it to the map with its correct role/token, re-verifying against the real source if
-its meaning is unclear, or (b) if it's a legitimate exclusion (an out-of-scope decorative
-asset already noted in the page inventory, or a duplicate instance of an already-recorded
-value), add an explicit one-line exclusion note in the checkpoint saying so — never drop it
-silently a second time. Re-run the script until it passes, THEN present the checkpoint.
-This gate catches values silently OMITTED from the map; it does not verify that a value
-already in the map is itself correct (that remains human/tool-call verification).
+Run all four gates defined in the design-extraction skill §14, in order (citation →
+completeness → deep-read → near-match scoping), against the draft file (and the raw
+transcript, for the gates that need it). Fix any failure per skill §14's guidance and
+re-run until all four pass, THEN present the checkpoint.
 
 ## CHECKPOINT, then STOP
 
@@ -84,6 +63,7 @@ wait for explicit approval (hard rule 2).
   stylesheet; v3: `theme.extend` in tailwind.config) AND fill the Design token map in
   `docs/design-tokens.md` in place with provenance per token — the map ↔ theme source
   must never diverge.
+- **Scaffold audit** (CLAUDE.md §11 Token map maintenance) — applies here, at APPLY time.
 - Create/update `docs/design-questions.md`; log the run in docs/progress-log.md.
 - Open a PR to `dev` (humans merge — hard rule 1). **Confirm before opening the PR**
   (hard rule 3). Never target `main`.

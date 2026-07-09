@@ -79,6 +79,17 @@ checkpoint is presented.
   Record each such value as its own token, under its own name, with no question — proximity in value
   space alone is never evidence of drift.
 
+  **Mandatory Role/Component tagging (mechanical verification).** Whenever a near-match candidate
+  IS raised (the pair passed the same-slot test above and a design question is warranted), state
+  the Role and Component of EACH value explicitly, in this exact parseable format:
+  `[Role: <role-name>, Component: <component-name>]` immediately after each value. This is not
+  optional formatting — it is the evidence a mechanical gate checks: if the two tags show a
+  different Role or a different Component, the pair did NOT pass the same-slot test above and
+  should not have been raised as a near-match at all. Example: `#E68A01 [Role:
+decorative-underline-fill, Component: MenuItem] vs #E98C00 [Role: border, Component: Accordion]`
+  — this pair's own tags show a different Role and Component, so per the rule above it should be
+  recorded as two independent tokens, not raised as a design question.
+
 - **Match with a previously REMOVED value** → recreate the token (mockup is canon) and
   append a follow-up design question referencing the original removal.
 
@@ -123,6 +134,13 @@ never two independent determinations in force at once.
   re-determines a value that already exists there. If a LATER `/baseline` is run on the same
   project, a differing full-coverage result supersedes a narrow-source one — treat this as a
   "canon moved" case per `/baseline`'s RE-RUN delta mode, not a silent conflict.
+- **Auto-confirm on unanimous census.** If the full-coverage census (baseline path) or the
+  narrow-source census (`/spec` fallback path) finds exactly ONE family with ZERO competing
+  entries, the primary-font confirmation is auto-accepted — do not present it as a checkpoint
+  item requiring an explicit human click. Present it as a confirmed fact in the output ("Primary
+  font: Poppins — 100% census, auto-confirmed, no competing family"), not a question. Explicit
+  confirmation remains required only when the census shows 2+ families in meaningful proportion
+  (genuine ambiguity).
 - Frames intentionally using a different family → design question (unchanged).
 
 ## 9. Vector extraction — icons & decorative vectors
@@ -350,3 +368,44 @@ per-minute cap). This constrains HOW extraction work is executed, not what to ex
   extracted before the limit hit and what is missing, flagged as a **tool-access gap, not
   a design absence** (§10 applies here too — a rate-limit STOP is not evidence a value
   doesn't exist). Never retry the same call in a loop hoping the limit clears mid-session.
+
+## 14. Mechanical verification gates (Bash-capable contexts only)
+
+These four gates mechanically check a checkpoint draft before it is presented to the
+human. They require a raw tool-call transcript (built per the logging requirement below)
+and run wherever Bash is available — the `/baseline` orchestrator directly; for `/spec`,
+the ORCHESTRATOR runs them after the `analyst` subagent (which has no Bash) returns its
+draft — see the per-command wiring in each command file, which points here rather than
+restating the gate logic.
+
+**Raw-transcript logging (prerequisite for all four gates):** as `get_design_context` /
+`download_assets` / `get_variable_defs` calls are made during extraction, append each raw
+tool response verbatim to a scratch transcript file — not a summary, the actual returned
+text. Without this, the gates below have nothing to check against.
+
+1. **Citation gate** (`validate-checkpoint-citations.sh <draft-file>`) — every
+   value-bearing line (hex color / % / px) must carry a Figma node-id citation on the
+   same line. Catches values written without a traceable source.
+2. **Completeness gate** (`validate-checkpoint-completeness.sh <raw-transcript-file>
+<draft-file>`) — every color AND opacity-bearing value (hex/rgba, `fill-opacity=`,
+   `stroke-opacity=`, bare `opacity=`) seen anywhere in the raw transcript must also
+   appear somewhere in the draft. Catches values that were extracted but silently
+   dropped before the draft was written.
+3. **Deep-read gate** (`validate-checkpoint-deep-read.sh <raw-transcript-file>`) — every
+   node-id whose `get_design_context` response contained a raster `<img>` reference (the
+   §9 wrong-tool signal) must also have a `download_assets` call for that same node-id
+   somewhere in the transcript, regardless of what it found. Catches a flattened tool
+   result accepted as final without ever calling the deeper tool.
+4. **Near-match scoping gate** (`validate-checkpoint-near-match-scoping.sh <draft-file>`)
+   — every near-match/`⚠ pending` line must tag both compared values with
+   `[Role: ..., Component: ...]` (per §4); if the two tags show a different Role or
+   Component, the pair fails the same-slot test and should not have been raised as a
+   near-match. Catches a near-match raised where the pair's own stated evidence
+   contradicts §4's same-slot rule.
+
+**On any gate failing:** do not present the checkpoint yet. Re-verify each flagged item
+against the real source (never from memory), correct the draft, re-run the gate until it
+passes. **Scope boundary, honest:** these gates check MECHANICAL properties (citation
+present, value present, deeper tool called, tags internally consistent) — none of them
+verify that a cited/tagged/extracted value is itself CORRECT. That remains human/tool-call
+verification.
