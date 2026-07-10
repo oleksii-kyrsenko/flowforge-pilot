@@ -82,15 +82,33 @@ This is confirmed at the normal spec-approval checkpoint below — not a separat
 
 ## Mechanical verification gates (orchestrator step, before the spec-approval checkpoint)
 
-The **analyst** subagent has no `Bash` and cannot run these gates itself. Require the
-analyst to write its raw tool-call transcript AND its draft spec text to scratchpad files
-(same logging requirement as skill §14) before returning control. Once the analyst
-returns, the ORCHESTRATOR runs all four gates from skill §14 against those files, exactly
-as `/baseline` does. Fix any failure per skill §14's guidance (re-verify against the real
-source, correct the draft, re-run) before presenting the spec for approval. This applies
-whether `/baseline` has run on this project yet or not — `/spec` may be the first command
-run on a project (see skill §8's fallback path), so it cannot assume the gates were
-already exercised by an earlier `/baseline`.
+**Raw Figma-tool-response transcript — hook-driven, not analyst-authored.** The same
+PostToolUse hook that serves `/baseline` (`.claude/hooks/figma-transcript-capture.sh`,
+matcher `mcp__figma__get_design_context|mcp__figma__download_assets|mcp__figma__get_variable_defs`)
+fires for these same three tools regardless of which command's tool call triggered
+them — including calls made by the **analyst** subagent — and appends the harness's own
+`tool_response` verbatim to `.claude/tmp/baseline-raw-transcript.txt`. The analyst has no
+`Write`/`Bash` and never has to write this file itself; it is captured automatically. **At
+the start of `/spec`, before any Figma tool call (including any the analyst will make),
+truncate this file** (`: > "$CLAUDE_PROJECT_DIR"/.claude/tmp/baseline-raw-transcript.txt`)
+— the file is shared with `/baseline` and with every other `/spec` invocation in the same
+session, so without this step a prior run's (or a prior command's) leftover entries would
+silently leak into this ticket's gate check.
+
+**Draft spec text — still returned by the analyst, still written by the orchestrator.**
+The hook only captures raw Figma tool responses, not the analyst's own synthesized spec
+prose — that can only cross the subagent boundary via the analyst's single final returned
+message (per the Agent tool's own behavior: it returns one message back to the caller).
+Have the analyst return its full draft spec text as that final message; the ORCHESTRATOR
+then writes it to a scratch draft file (e.g. `.claude/tmp/spec-draft-<JIRA-KEY>.md`)
+immediately after the Task returns.
+
+Once both files exist, the ORCHESTRATOR runs all four gates from skill §14 against them,
+exactly as `/baseline` does. Fix any failure per skill §14's guidance (re-verify against
+the real source, correct the draft, re-run) before presenting the spec for approval. This
+applies whether `/baseline` has run on this project yet or not — `/spec` may be the first
+command run on a project (see skill §8's fallback path), so it cannot assume the gates
+were already exercised by an earlier `/baseline`.
 
 ## Then STOP
 
