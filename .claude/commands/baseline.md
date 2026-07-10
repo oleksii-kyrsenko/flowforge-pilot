@@ -34,12 +34,15 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   no longer present in any source ("deprecate?" question — never delete silently).
   Unchanged mockups → print "No changes against the approved map", change no files, open
   no PR.
-- **Raw-transcript logging (for the completeness gate below):** as you call
-  `get_design_context`/`download_assets`/`get_variable_defs` during extraction, append
-  each raw tool response verbatim to a scratch transcript file (e.g.
-  `<scratchpad>/baseline-raw-transcript.txt`) — not a summary, the actual returned text.
-  This is required input for the mechanical completeness gate; without it, that gate has
-  nothing to check against.
+- **Raw-transcript logging (hook-driven, not model-authored):** a PostToolUse hook
+  (`.claude/hooks/figma-transcript-capture.sh`, matcher
+  `mcp__figma__get_design_context|mcp__figma__download_assets|mcp__figma__get_variable_defs`)
+  automatically appends the harness's own `tool_response` for every call to these three
+  tools to `.claude/tmp/baseline-raw-transcript.txt` — verbatim, by construction, since
+  the model never chooses what gets written. **At the start of this command, before any
+  Figma tool call, truncate that file** (`: > "$CLAUDE_PROJECT_DIR"/.claude/tmp/baseline-raw-transcript.txt`)
+  so a prior run's entries never leak into this checkpoint's gate check. Pass this same
+  path to the four gates below as `<raw-transcript-file>`.
 
 ## Mechanical verification gates (before presenting the checkpoint)
 
