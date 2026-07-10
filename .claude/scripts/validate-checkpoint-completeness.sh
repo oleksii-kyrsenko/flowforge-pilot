@@ -22,7 +22,13 @@ DRAFT="$2"
 COLOR_PATTERN='#[0-9A-Fa-f]{3,8}\b|rgba?\([0-9]+,\s*[0-9]+,\s*[0-9]+(,\s*[0-9.]+)?\)|(fill-opacity|stroke-opacity|opacity)="[0-9.]+"'
 
 extract_colors() {
-  grep -oE "$COLOR_PATTERN" "$1" | tr 'A-Z' 'a-z' | tr -d ' ' | sort -u
+  # An empty match set (zero colors/opacity values in this file) is a legitimate
+  # state, not an error — e.g. a non-UI ticket's draft, or this file simply has
+  # none of either. `grep` exits 1 on no-match, which would otherwise trip
+  # `set -e` here and silently kill the script before the comparison loop runs
+  # (matches the guard already used in validate-checkpoint-deep-read.sh's
+  # DEEP_READ_NODES pipelines).
+  grep -oE "$COLOR_PATTERN" "$1" | tr 'A-Z' 'a-z' | tr -d ' ' | sort -u || true
 }
 
 RAW_COLORS=$(extract_colors "$RAW")
