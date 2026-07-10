@@ -17,7 +17,21 @@ NODE_ID_PATTERN='[0-9]+:[0-9]+'
 # Node-ids associated with an <img reference in a get_design_context response:
 # for each line containing "<img", use the nearest data-node-id="X:Y" seen
 # above it in the same block.
-FLATTENED_NODES=$(awk '
+#
+# Two fixed MCP-server boilerplate sentences (present verbatim on every
+# get_design_context call, confirmed session-16 dry-run + T39 hook capture)
+# each independently contain a literal example that coincidentally matches
+# this detector's bare patterns: `data-node-id="1:2"` (in the "Node ids have
+# been added..." sentence) and `<img src={image} />` (in the "...used in the
+# code as the source for the image..." sentence). They are excluded by their
+# full, exact surrounding prose — NOT by the bare tokens, and NOT by deleting
+# the range between them, since a real per-node Component-descriptions block
+# (different node ids, different text shape entirely) legitimately sits
+# between these two sentences and must survive untouched.
+FLATTENED_NODES=$(grep -vF \
+  -e 'Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.' \
+  -e 'These constants will be used in the code as the source for the image, ex: <img src={image} />.' \
+  "$RAW" | awk '
   /data-node-id="[0-9]+:[0-9]+"/ {
     match($0, /data-node-id="[0-9]+:[0-9]+"/)
     last_id = substr($0, RSTART+14, RLENGTH-15)
@@ -25,7 +39,7 @@ FLATTENED_NODES=$(awk '
   /<img/ {
     if (last_id != "") print last_id
   }
-' "$RAW" | sort -u)
+' | sort -u)
 
 # Node-ids that were passed to a download_assets call anywhere in the transcript
 DEEP_READ_NODES=$(grep -oE '"nodeId"\s*:\s*"'"$NODE_ID_PATTERN"'"' "$RAW" \

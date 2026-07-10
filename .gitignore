@@ -53,3 +53,6 @@ prompt.md
 
 # Claude Code — per-user local settings (never commit; would leak per-user permissions)
 .claude/settings.local.json
+
+# Claude Code — hook-generated scratch transcripts (ephemeral per-run working data)
+.claude/tmp/
