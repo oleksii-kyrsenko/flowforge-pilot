@@ -42,14 +42,15 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   the model never chooses what gets written. **At the start of this command, before any
   Figma tool call, truncate that file** (`: > "$CLAUDE_PROJECT_DIR"/.claude/tmp/baseline-raw-transcript.txt`)
   so a prior run's entries never leak into this checkpoint's gate check. Pass this same
-  path to the four gates below as `<raw-transcript-file>`.
+  path to the five gates below as `<raw-transcript-file>`.
 
 ## Mechanical verification gates (before presenting the checkpoint)
 
-Run all four gates defined in the design-extraction skill §14, in order (citation →
-completeness → deep-read → near-match scoping), against the draft file (and the raw
-transcript, for the gates that need it). Fix any failure per skill §14's guidance and
-re-run until all four pass, THEN present the checkpoint.
+Run all five gates defined in the design-extraction skill §14, in order (citation →
+completeness → deep-read → near-match scoping → verify-node tag), against the draft file
+(and the raw transcript, for the gates that need it). Fix any BLOCKING failure per skill
+§14's guidance and re-run until all five pass (gate 5's warn tier does not block by
+itself — add the missing tag before presenting), THEN present the checkpoint.
 
 ## CHECKPOINT, then STOP
 
