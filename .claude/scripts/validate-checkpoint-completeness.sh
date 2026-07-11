@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Mechanical check: every color value (hex or rgba) AND every opacity-bearing attribute
-# (fill-opacity="X", stroke-opacity="X", bare opacity="X") appearing anywhere in the raw
-# Figma tool-call transcript for this /baseline run must also appear somewhere in
-# the final checkpoint draft text. Catches SILENTLY DROPPED values, not just
-# missing citations (see validate-checkpoint-citations.sh for that).
+# Mechanical check: every color value (hex or rgba), every opacity-bearing attribute
+# (fill-opacity="X", stroke-opacity="X", bare opacity="X"), AND every bare Tailwind
+# color-keyword class (text-white, bg-black, text-[transparent], from-white, etc. —
+# these are genuine, distinct color values that the hex/rgba-only pattern silently
+# missed) appearing anywhere in the raw Figma tool-call transcript for this /baseline
+# run must also appear somewhere in the final checkpoint draft text. Catches SILENTLY
+# DROPPED values, not just missing citations (see validate-checkpoint-citations.sh for
+# that).
 # Usage: validate-checkpoint-completeness.sh <raw-transcript-file> <checkpoint-draft-file>
 # Exit 0 = clean. Exit 1 = one or more raw-seen values missing from the draft.
 
@@ -19,7 +22,16 @@ DRAFT="$2"
 # captured once, as "fill-opacity=\"0.8\"", never double-counted against a separate
 # bare-opacity match. No lookbehind needed (also keeps this portable to BSD grep,
 # which lacks -P/PCRE support).
+#
+# KEYWORD_COLOR_PATTERN closes a second blind spot: Tailwind lets a color-bearing
+# utility carry a bare keyword instead of a hex/rgba value (`text-white`, `from-black`,
+# `bg-[transparent]`) — white/black/transparent are the three keywords Tailwind
+# recognizes this way. Two alternatives (bare vs. bracketed) rather than independently
+# optional brackets, so a malformed one-sided bracket (`text-white]`) can never match —
+# each alternative requires BOTH brackets or NEITHER.
 COLOR_PATTERN='#[0-9A-Fa-f]{3,8}\b|rgba?\([0-9]+,\s*[0-9]+,\s*[0-9]+(,\s*[0-9.]+)?\)|(fill-opacity|stroke-opacity|opacity)="[0-9.]+"'
+KEYWORD_COLOR_PATTERN='\b(text|bg|border|from|via|to|fill|stroke|ring|divide|outline|accent|caret|decoration|placeholder|shadow)-(white|black|transparent)\b|\b(text|bg|border|from|via|to|fill|stroke|ring|divide|outline|accent|caret|decoration|placeholder|shadow)-\[(white|black|transparent)\]'
+COLOR_PATTERN="$COLOR_PATTERN|$KEYWORD_COLOR_PATTERN"
 
 extract_colors() {
   # An empty match set (zero colors/opacity values in this file) is a legitimate

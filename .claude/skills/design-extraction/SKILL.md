@@ -1,6 +1,6 @@
 ---
 name: design-extraction
-description: The Figma extraction & dedup methodology for FlowForge. Use whenever extracting design values from a Figma file — the token baseline (GUIDE Prompt B), /spec token sections, and /design-fixes value comparison. Defines what to extract, how to census it, how to normalize, and how near-matches become design questions.
+description: The Figma extraction & dedup methodology for FlowForge. Use whenever extracting design values from a Figma file — the token baseline, /spec token sections, and /design-fixes value comparison. Defines what to extract, how to census it, how to normalize, and how near-matches become design questions.
 ---
 
 # Design extraction & dedup methodology
@@ -218,6 +218,28 @@ before recording a value as confirmed. This does not create a new capability req
 how an already-available tool must be used; a context without Bash (the `analyst` sub-agent under `/spec`,
 restricted per its own tool list) remains bound by the STOP-and-ask rule above, unchanged.
 
+**Coincidental hex match is not identity for a flattened paint.** When `get_design_context` flattens a
+paint (border, fill, stroke) to a solid hex that happens to equal an already-established token's value, do
+NOT record it as "confirmed, same token" on that visual/hex coincidence alone — a flattened representation
+can silently hide a gradient, a bound variable, or an unrelated raw value that merely renders to the same
+hex at a glance (illustrative failure mode: a component state's border may be flattened by
+`get_design_context` into a single flat color while the real Figma paint is actually a vertical gradient —
+trusting the flattened read alone would silently record the wrong value). Before writing the claim, run,
+in this order:
+
+1. **`get_variable_defs` on that exact node** — if the paint is bound to a variable/style, that settles
+   identity (reuse or distinguish per the dedup rules in §4).
+2. **If unbound and no named local style resolves it, the `download_assets` (format: svg) export for that
+   SAME node MUST actually be fetched** (`curl` on the returned URL, per the raw-bytes rule above) **and its
+   real paint data read** — inferring identity from a sibling state's already-confirmed pattern is NOT
+   sufficient evidence. Each state/node earns its own curl-and-read; a match confirmed on one sibling does
+   not carry over to the next just because the property name is the same.
+
+This applies wherever the raster-≠-unavailable / `download_assets svg` rule above already applies — a
+passed `download_assets` _call_ is not proof the export was actually read; the mechanical deep-read gate
+(skill §14 gate 3) only checks that the call was made, never what its payload contained. Closing that gap
+is a methodology discipline (this rule), not something the mechanical gate can enforce.
+
 ## 10. Source coverage — exhaust the sources before flagging "unextractable / undefined"
 
 **Visual structure recognition — before any per-node extraction.** A component/style-guide file exists
@@ -361,9 +383,9 @@ The Figma MCP enforces an account/seat-level tool-call quota (both a per-day and
 per-minute cap). This constrains HOW extraction work is executed, not what to extract.
 
 - **Do not fan out wide-parallel extraction sub-agents against the Figma MCP.** A 6-way
-  parallel fan-out has been observed to exhaust the shared quota within a few calls
-  (session 11, `/baseline`). Extract multiple component groups either **sequentially**, or
-  with **limited concurrency (≤2 sub-agents at once)**.
+  parallel fan-out has been observed to exhaust the shared quota within a few calls.
+  Extract multiple component groups either **sequentially**, or with **limited
+  concurrency (≤2 sub-agents at once)**.
 - **On a rate-limit error, STOP that sub-task immediately.** Report exactly what was
   extracted before the limit hit and what is missing, flagged as a **tool-access gap, not
   a design absence** (§10 applies here too — a rate-limit STOP is not evidence a value
