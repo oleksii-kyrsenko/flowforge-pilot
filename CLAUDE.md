@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.78 · Date: 2026-07-10 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.80 · Date: 2026-07-10 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -235,7 +235,7 @@ Status advances are **idempotent and forward-only** — the pipeline never moves
 - **ESLint + Prettier, Airbnb style** — one style for all developers and for the agent (kills style-diff conflicts in PRs). Stack: `eslint` (9, flat config) + **`eslint-config-airbnb-extended`** + `eslint-config-prettier` + `prettier`. **Airbnb preset decision (bootstrap):** classic `eslint-config-airbnb@19`, `eslint-config-airbnb-typescript@18`, and `@vercel/style-guide@6` are all peer-locked to ESLint 7/8 and incompatible with our ESLint 9 — verified via npm. `eslint-config-airbnb-extended` is the maintained, flat-config-native Airbnb ruleset (peer `eslint ^9`) and bundles its plugins (typescript-eslint, react, react-hooks, import-x, jsx-a11y, @next/eslint-plugin-next, @stylistic), so it **owns all plugin registration**. `eslint-config-next` was removed (uninstalled): in flat config it would double-register the shared plugins, and airbnb-extended's `next` config already provides the `@next/next` rules — the Next.js **Core Web Vitals** rules (`@next/next/no-img-element`, `no-sync-scripts`, `no-html-link-for-pages`, etc.; 21 `@next/next` rules total) are active, verified via `npx eslint --print-config`. The flat config registers `plugins.next` and spreads `configs.next.recommended` + `configs.next.typescript` (see `eslint.config.mjs`). Project overrides: `import-x/prefer-default-export` is OFF (named-exports convention above); `import-x/no-extraneous-dependencies` is OFF for config/test/setup files.
 - **husky + lint-staged, pre-commit hook:** `lint-staged` runs `eslint --fix` and `prettier --write` on staged files; then `tsc --noEmit`. Full test suite runs on **pre-push** (or CI), not pre-commit — keeps commits fast (<10 s) so the agent's frequent commits don't crawl.
 - Layering: Claude Code PostToolUse hook = fast feedback while generating; husky = enforcement gate (applies to humans and the agent equally); CI = final word. The agent must never bypass hooks (`--no-verify` is forbidden).
-- Setup is part of pipeline bootstrap (GUIDE Prompt 2); config files (`eslint.config.*`, `.prettierrc`, `.husky/`, `lint-staged` block) live in the repo and ship with the template as defaults.
+- Setup is part of pipeline bootstrap; config files (`eslint.config.*`, `.prettierrc`, `.husky/`, `lint-staged` block) live in the repo and ship with the template as defaults.
 
 ### Git steps — commit & push nodes
 
@@ -247,7 +247,7 @@ The branch/merge model is hard rule 1 (branches only from up-to-date `dev`; PRs 
 - **Node 4 — `/ship` (b):** `git commit` the ship-done metric row + cycle summary as `/ship`'s **last** action (after the PR is open).
 - **Push — `/ship`:** `git push -u origin <branch>` (**feature branch ONLY, never `dev`/`main`** — hard rule 1) at `/ship`; **re-push as later commits accrue** (the open PR auto-updates).
 - **Boundaries:** never `--no-verify`; a commit on a red gate is forbidden; commit/push the feature branch only. Ad-hoc correction commits are fine — squash-merge collapses all branch commits into one `dev` commit.
-- **Metric-row binding (DESCRIPTION, not a guarantee):** metric rows accrue in the working tree as each command runs; each command's commit-node sweeps whatever rows are present at commit time; `/spec`'s rows ride node 1. This describes current behavior — it is **not** a guarantee that each command commits its own rows; the deterministic alternative (each command commits its own rows in its own node) is a **deferred engine question (registry T2Y), not current behavior**. Reference cycle: FF-8; FF-9's grouping was an anomalous late-batch artifact.
+- **Metric-row binding (DESCRIPTION, not a guarantee):** metric rows accrue in the working tree as each command runs; each command's commit-node sweeps whatever rows are present at commit time; `/spec`'s rows ride node 1. This describes current behavior — it is **not** a guarantee that each command commits its own rows; the deterministic alternative (each command commits its own rows in its own node) is a **deferred engine question, not current behavior**.
 - Setup/maintenance commands (`/baseline`, `/design-fixes`) commit on their **approval checkpoint**, not these cycle nodes; `/tickets` makes no commit (Jira-only).
 
 ### Project structure (canonical; `/build` MUST follow it)
@@ -266,7 +266,7 @@ src/
   types/                # shared TypeScript types
   styles/               # globals, Tailwind config extensions
 docs/specs/             # one spec per ticket (written by /spec)
-docs/design-questions.md  # designer Q&A journal (created by Prompt B baseline; appended by /spec, /review, /design-fixes)
+docs/design-questions.md  # designer Q&A journal (created by /baseline; appended by /spec, /review, /design-fixes)
 docs/design-tokens.md     # THE token map data (law: section 11)
 docs/progress-log.md      # THE progress log (law: MAINTENANCE RULE)
 docs/metrics/           # metrics.csv — auto-appended timestamps per stage (see Metrics & logging)
@@ -341,7 +341,7 @@ The filled token map (all rows, provenance, raw values, `⚠ pending` marks) liv
 ### Skills (.claude/skills/ — created at bootstrap, ship with the engine)
 
 - **Origin rule:** a new SUBAGENT is born only when a new combination of access rights is needed; knowledge needed by several executors becomes a SKILL. Law (always-loaded rules in this file) is never moved into skills — skill loading is probabilistic, law must be deterministic; skills hold methodology and reference material.
-- **design-extraction** — the Figma extraction & dedup methodology, the single shared home for the token baseline (GUIDE Prompt B), /spec, and /design-fixes. Contents: extraction categories — solid colors; gradients (type, ordered stops + angle); shadows/blurs (color, offset, blur, spread; layer and background); stroke colors, weights, dash patterns, alignment; corner radii; typography (family/weight/size/line-height/letter-spacing); auto-layout spacing; breakpoint-like frame widths; prototype reactions as motion values; plus the OTHER catch-all — any styled property fitting no category MUST be reported, never silently skipped (the list is a structure, not a filter). Census as aggregates only (unique value → use count + 2-3 example nodes with node-ids), never raw dumps. Normalization: lowercase hex, unified units; composite values compare component-wise. Near-match → both values become tokens as-is + a design question. Correlated counts (values appearing only together with identical counts) = one repeated element, one observation. Variant states: diff by what CHANGES between variants, not by variant names.
+- **design-extraction** — the Figma extraction & dedup methodology, the single shared home for the token baseline, /spec, and /design-fixes. Contents: extraction categories — solid colors; gradients (type, ordered stops + angle); shadows/blurs (color, offset, blur, spread; layer and background); stroke colors, weights, dash patterns, alignment; corner radii; typography (family/weight/size/line-height/letter-spacing); auto-layout spacing; breakpoint-like frame widths; prototype reactions as motion values; plus the OTHER catch-all — any styled property fitting no category MUST be reported, never silently skipped (the list is a structure, not a filter). Census as aggregates only (unique value → use count + 2-3 example nodes with node-ids), never raw dumps. Normalization: lowercase hex, unified units; composite values compare component-wise. Near-match → both values become tokens as-is + a design question. Correlated counts (values appearing only together with identical counts) = one repeated element, one observation. Variant states: diff by what CHANGES between variants, not by variant names.
 - **seo** — Metadata API rules, JSON-LD templates, landmark/heading checklist; loaded by analyst for route-level /spec and by reviewer for its review.
 - **adf-formatting** — ADF JSON structure reference with examples (taskList checkboxes, link/code marks); companion to hard rule 8.
 - **Safety net:** mandatory spec sections (Test plan, Animations, Reuse check, SEO line for route tickets) are law — if one is missing, /review flags it; a missing section usually means a skill failed to load.
@@ -349,9 +349,9 @@ The filled token map (all rows, provenance, raw values, `⚠ pending` marks) liv
 ### Metrics & logging (automated)
 
 - Every pipeline command (`/spec`, `/build`, `/review`, `/ship`, `/design-fixes`) MUST, as its first and last action, append a row to `docs/metrics/metrics.csv` (columns: `ticket,stage,event,timestamp_iso`; events: `start`/`done`) using `date -u +%Y-%m-%dT%H:%M:%SZ`. Never skip or backfill rows from memory. Setup/batch commands (`/tickets`, `/baseline`) do NOT write metrics.csv; they record their activity in docs/progress-log.md. **`/design-fixes` writes metrics only when applying a designer reply (branch + PR); its `export` mode is a read-only render and does NOT write metrics.csv** — a pseudo-ticket row would pollute per-ticket cycle aggregation, like the `/tickets`/`/baseline` rows.
-- Derived human intervals: `spec done → build start` ≈ human spec review; `ship done (PR opened) → merge` ≈ human code review. These are wall-clock approximations — the human may correct them (GUIDE Prompt 6, optional).
+- Derived human intervals: `spec done → build start` ≈ human spec review; `ship done (PR opened) → merge` ≈ human code review. These are wall-clock approximations — the human may correct them.
 - After `/ship`, append a one-line cycle summary to docs/progress-log.md (date, ticket, stages completed).
-- Weekly (GUIDE Prompt 7): aggregate metrics.csv into the "after" numbers of section 7.
+- Weekly: aggregate metrics.csv into the "after" numbers of section 7.
 
 ### Clean-run & freeze-counter (engine-stabilization criterion)
 

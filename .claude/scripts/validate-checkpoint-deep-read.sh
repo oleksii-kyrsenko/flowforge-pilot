@@ -19,8 +19,8 @@ NODE_ID_PATTERN='[0-9]+:[0-9]+'
 # above it in the same block.
 #
 # Two fixed MCP-server boilerplate sentences (present verbatim on every
-# get_design_context call, confirmed session-16 dry-run + T39 hook capture)
-# each independently contain a literal example that coincidentally matches
+# get_design_context call) each independently contain a literal example that
+# coincidentally matches
 # this detector's bare patterns: `data-node-id="1:2"` (in the "Node ids have
 # been added..." sentence) and `<img src={image} />` (in the "...used in the
 # code as the source for the image..." sentence). They are excluded by their

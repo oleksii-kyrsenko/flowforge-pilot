@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # FlowForge PostToolUse hook: verbatim Figma raw-transcript capture for /baseline's
 # mechanical gates (design-extraction skill S14). Removes the model's opportunity to
-# paraphrase or omit a tool response before logging it (session 16 / T38-T39: a
-# model-authored placeholder summary silently broke Gate 3's detection for node 2:51).
+# paraphrase or omit a tool response before logging it.
 # Appends the harness's OWN tool_response (ground truth per code.claude.com/docs/en/hooks'
 # PostToolUse stdin schema) for exactly the three tools skill S14 names:
 # get_design_context, download_assets, get_variable_defs. get_metadata/get_screenshot/
