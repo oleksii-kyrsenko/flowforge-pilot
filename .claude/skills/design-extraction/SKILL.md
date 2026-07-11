@@ -235,6 +235,34 @@ in this order:
    sufficient evidence. Each state/node earns its own curl-and-read; a match confirmed on one sibling does
    not carry over to the next just because the property name is the same.
 
+**A child/descendant's export is not a substitute for calling the tool on the node itself.** The
+sibling-state trap above is sibling-to-sibling (Hover's confirmed value doesn't carry over to Press). A
+second, distinct trap is parent-to-child: `download_assets` on a small descendant node (an icon, a text
+leaf) can return an SVG that — because Figma's export includes ancestor positioning/paint context — also
+happens to contain the PARENT frame's own border or fill, rendered correctly. Reading that incidental
+payload and recording the parent node as verified is still a violation of rule 2 above: `get_variable_defs`
+and `download_assets` were never called with the parent's OWN node-id, only the child's. The data read this
+way can be perfectly accurate — the trap is procedural, not factual — but the claim "verified" attached to
+the parent's node-id is unbacked until a call naming that exact node-id exists in the transcript. If a
+descendant's export is the only practical source for a given value, call `download_assets` on the actual
+node the claim is about anyway (it is always addressable, being an ancestor of an addressable node) before
+writing the claim.
+
+**Mandatory `[Verify-node: X:Y]` tagging (mechanical verification).** Whenever a claim resolves a
+flattened/ambiguous paint via `get_variable_defs` or `download_assets` — "confirmed", "verified",
+"svg-confirmed", "FALSE FLATTENING caught via svg", or equivalent wording — tag it in this exact
+parseable format immediately after the claim: `[Verify-node: <node-id>]`, naming the EXACT node-id the
+calls were actually made on. This is not optional formatting — it is the evidence a mechanical gate
+checks (skill §14 gate 5): a tagged claim with no matching `get_variable_defs`/`download_assets` call on
+that exact node-id in the transcript fails the gate, and an untagged claim that reads like a verification
+(trigger wording plus a node-id citation but no tag) is flagged as a warning to add one. Tag the node the
+claim is actually ABOUT, never a child/descendant used only as an incidental data source — that
+distinction is the entire point of this rule; see the parent/child trap directly above. Example: `border
+resolves to white 20%→0% opacity fade [Verify-node: 2:94]` is only valid if the transcript shows a
+`get_variable_defs` or `download_assets` call with `"nodeId":"2:94"` — a call on a different id (e.g. a
+child icon `2:99`) does not satisfy the tag, no matter how accurate the value read from it turned out to
+be.
+
 This applies wherever the raster-≠-unavailable / `download_assets svg` rule above already applies — a
 passed `download_assets` _call_ is not proof the export was actually read; the mechanical deep-read gate
 (skill §14 gate 3) only checks that the call was made, never what its payload contained. Closing that gap
@@ -393,14 +421,14 @@ per-minute cap). This constrains HOW extraction work is executed, not what to ex
 
 ## 14. Mechanical verification gates (Bash-capable contexts only)
 
-These four gates mechanically check a checkpoint draft before it is presented to the
+These five gates mechanically check a checkpoint draft before it is presented to the
 human. They require a raw tool-call transcript (built per the logging requirement below)
 and run wherever Bash is available — the `/baseline` orchestrator directly; for `/spec`,
 the ORCHESTRATOR runs them after the `analyst` subagent (which has no Bash) returns its
 draft — see the per-command wiring in each command file, which points here rather than
 restating the gate logic.
 
-**Raw-transcript logging (prerequisite for all four gates):** as `get_design_context` /
+**Raw-transcript logging (prerequisite for all five gates):** as `get_design_context` /
 `download_assets` / `get_variable_defs` calls are made during extraction, append each raw
 tool response verbatim to a scratch transcript file — not a summary, the actual returned
 text. Without this, the gates below have nothing to check against.
@@ -424,10 +452,23 @@ text. Without this, the gates below have nothing to check against.
    Component, the pair fails the same-slot test and should not have been raised as a
    near-match. Catches a near-match raised where the pair's own stated evidence
    contradicts §4's same-slot rule.
+5. **Verify-node tag gate** (`validate-checkpoint-verify-node-tags.sh <raw-transcript-file>
+<draft-file>`) — two-tier: (a) **block** every `[Verify-node: X:Y]` tag (per §9) whose
+   exact node-id `X:Y` has no matching `get_variable_defs`/`download_assets` call in the
+   transcript — a tag naming a different node (e.g. a child used as an incidental data
+   source) does not satisfy it; (b) **warn** (non-blocking) on prose that reads as a
+   verification claim — trigger wording ("confirmed", "verified", "svg-confirmed", "FALSE
+   FLATTENING", etc.) plus a node-id citation on the same line — but carries no
+   `[Verify-node:]` tag at all, nudging the author to add one. Catches a claim whose
+   verification-call evidence doesn't actually name the node the claim is about — the
+   defect this gate exists for is a controller-caught real incident, not a hypothetical
+   (a claim of "svg-confirmed" for a parent node backed only by a call on its child).
 
-**On any gate failing:** do not present the checkpoint yet. Re-verify each flagged item
-against the real source (never from memory), correct the draft, re-run the gate until it
-passes. **Scope boundary, honest:** these gates check MECHANICAL properties (citation
-present, value present, deeper tool called, tags internally consistent) — none of them
-verify that a cited/tagged/extracted value is itself CORRECT. That remains human/tool-call
-verification.
+**On any BLOCKING gate failing:** do not present the checkpoint yet. Re-verify each
+flagged item against the real source (never from memory), correct the draft, re-run the
+gate until it passes. Gate 5's warn tier does not block the checkpoint by itself — treat
+it as a prompt to add the missing tag before presenting, not a hard stop. **Scope
+boundary, honest:** these gates check MECHANICAL properties (citation present, value
+present, deeper tool called on the right node-id, tags internally consistent) — none of
+them verify that a cited/tagged/extracted value is itself CORRECT. That remains
+human/tool-call verification.
