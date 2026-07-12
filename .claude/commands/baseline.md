@@ -42,23 +42,36 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   the model never chooses what gets written. **At the start of this command, before any
   Figma tool call, truncate that file** (`: > "$CLAUDE_PROJECT_DIR"/.claude/tmp/baseline-raw-transcript.txt`)
   so a prior run's entries never leak into this checkpoint's gate check. Pass this same
-  path to the five gates below as `<raw-transcript-file>`.
+  path to the six gates below as `<raw-transcript-file>`.
 
 ## Mechanical verification gates (before presenting the checkpoint)
 
-Run all five gates defined in the design-extraction skill §14, in order (citation →
-completeness → deep-read → near-match scoping → verify-node tag), against the draft file
-(and the raw transcript, for the gates that need it). Fix any BLOCKING failure per skill
-§14's guidance and re-run until all five pass (gate 5's warn tier does not block by
-itself — add the missing tag before presenting), THEN present the checkpoint.
+Run all six gates defined in the design-extraction skill §14, in order (citation →
+completeness → deep-read → near-match scoping → verify-node tag → sibling-instance
+coverage), against the draft file (and the raw transcript, for the gates that need it).
+Fix any BLOCKING failure per skill §14's guidance and re-run until all six pass (gates 5
+and 6's warn tiers do not block by themselves — add the missing tag / resolve or
+document the flagged sibling group before presenting), THEN present the checkpoint.
 
 ## CHECKPOINT, then STOP
+
+**Draft dump to disk (all run branches, overwrite every run):** immediately before
+presenting, write the full checkpoint content to `.claude/tmp/baseline-draft.md` —
+truncate/replace, never append, so the file only ever holds THIS run's result (same
+truncate-at-start discipline as `baseline-raw-transcript.txt` above). This applies on
+every run branch, including the RE-RUN "No changes against the approved map" branch —
+write that exact result to the file too, so a stale prior dump can never be mistaken for
+the current run's outcome. This is a pre-approval scratch artifact (gitignored, same zone
+as the raw transcript) — NOT a canon write; canon still enters the repo only via the
+APPLY phase's PR below.
 
 Before any write, present: a **PAGE INVENTORY** per source (swept / skipped: empty or
 service / out of scope / **NOT VISIBLE TO TOOL** — coverage claims are valid only against
 this inventory), the **full map in sections** with every section printed even when empty
-("none found"), the **pending** list, and **draft design questions**. Then **STOP** and
-wait for explicit approval (hard rule 2).
+("none found"), the **pending** list, and **draft design questions** — and **cite the
+`.claude/tmp/baseline-draft.md` path** in the report so the human and the read-only
+controller can both open the draft directly from disk. Then **STOP** and wait for
+explicit approval (hard rule 2).
 
 ## Apply (only after approval)
 

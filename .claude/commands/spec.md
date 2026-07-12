@@ -103,11 +103,11 @@ Have the analyst return its full draft spec text as that final message; the ORCH
 then writes it to a scratch draft file (e.g. `.claude/tmp/spec-draft-<JIRA-KEY>.md`)
 immediately after the Task returns.
 
-Once both files exist, the ORCHESTRATOR runs all five gates from skill §14 against them,
+Once both files exist, the ORCHESTRATOR runs all six gates from skill §14 against them,
 exactly as `/baseline` does. Fix any BLOCKING failure per skill §14's guidance (re-verify
 against the real source, correct the draft, re-run) before presenting the spec for
-approval — gate 5's warn tier does not block by itself, but add the missing tag anyway.
-This
+approval — gates 5 and 6's warn tiers do not block by themselves, but add the missing tag
+/ resolve or document the flagged sibling group anyway. This
 applies whether `/baseline` has run on this project yet or not — `/spec` may be the first
 command run on a project (see skill §8's fallback path), so it cannot assume the gates
 were already exercised by an earlier `/baseline`.
