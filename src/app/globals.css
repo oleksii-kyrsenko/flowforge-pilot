@@ -2,26 +2,30 @@
 @source not "../../docs";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #080c0f;
+  --foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-sans: var(--font-poppins);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: #e98c00;
+  --color-error: #ff5c00;
+  --color-nav-underline: #e68a01;
+  --color-gradient-from: #ffb800;
+  --color-gradient-to: #e97000;
+  --color-gradient-hover-from: #ffc533;
+  --color-gradient-hover-to: #ed8d33;
+  --color-gradient-press-from: #e5a500;
+  --color-gradient-press-to: #d16500;
+
+  --shadow-button: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
