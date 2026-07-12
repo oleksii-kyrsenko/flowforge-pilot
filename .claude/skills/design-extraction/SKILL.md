@@ -218,14 +218,14 @@ before recording a value as confirmed. This does not create a new capability req
 how an already-available tool must be used; a context without Bash (the `analyst` sub-agent under `/spec`,
 restricted per its own tool list) remains bound by the STOP-and-ask rule above, unchanged.
 
-**Coincidental hex match is not identity for a flattened paint.** When `get_design_context` flattens a
-paint (border, fill, stroke) to a solid hex that happens to equal an already-established token's value, do
-NOT record it as "confirmed, same token" on that visual/hex coincidence alone — a flattened representation
-can silently hide a gradient, a bound variable, or an unrelated raw value that merely renders to the same
-hex at a glance (illustrative failure mode: a component state's border may be flattened by
-`get_design_context` into a single flat color while the real Figma paint is actually a vertical gradient —
-trusting the flattened read alone would silently record the wrong value). Before writing the claim, run,
-in this order:
+**Coincidental match is not identity for any overridable property — color, opacity, or blend-mode
+alike.** When `get_design_context` flattens a paint (border, fill, stroke) to a solid hex that happens to
+equal an already-established token's value, do NOT record it as "confirmed, same token" on that visual/hex
+coincidence alone — a flattened representation can silently hide a gradient, a bound variable, or an
+unrelated raw value that merely renders to the same hex at a glance (illustrative failure mode: a
+component state's border may be flattened by `get_design_context` into a single flat color while the real
+Figma paint is actually a vertical gradient — trusting the flattened read alone would silently record the
+wrong value). Before writing the claim, run, in this order:
 
 1. **`get_variable_defs` on that exact node** — if the paint is bound to a variable/style, that settles
    identity (reuse or distinguish per the dedup rules in §4).
@@ -234,6 +234,21 @@ in this order:
    real paint data read** — inferring identity from a sibling state's already-confirmed pattern is NOT
    sufficient evidence. Each state/node earns its own curl-and-read; a match confirmed on one sibling does
    not carry over to the next just because the property name is the same.
+
+**The same discipline applies beyond color — structural repetition of a component does not imply its
+overridable properties are shared.** A component placed N times as "the same icon/button" is only the same
+GEOMETRY N times; opacity, blend-mode, and any other independently-overridable §1 property are each their
+own per-instance fact, not something a shared name or shared geometry lets you infer. Illustrative failure
+mode (a controller-caught real incident, not a hypothetical): three placed instances of the same Instagram
+icon, structurally identical, carried opacity 40% / 100% / 80% respectively — and the flattened
+`get_design_context` markup for the 100%-and-80% pair was textually IDENTICAL (neither instance showed an
+opacity utility class), so even diffing the flattened code between instances would not have surfaced the
+difference. Only an independent `download_assets`/`get_variable_defs` read per instance resolves this —
+the same "each state/node earns its own curl-and-read" rule above, now named explicitly for opacity and
+blend-mode so it is not read as color-only. Skill §14's gate 6 gives this a mechanical (WARN-tier) backstop:
+it flags any group of same-named placed instances where some were never individually deep-read — it cannot
+tell a state-varying group from a purely decorative repeat, so treat every flag as a prompt to check or to
+explicitly document the assumption, not as a defect by itself.
 
 **A child/descendant's export is not a substitute for calling the tool on the node itself.** The
 sibling-state trap above is sibling-to-sibling (Hover's confirmed value doesn't carry over to Press). A
@@ -421,17 +436,23 @@ per-minute cap). This constrains HOW extraction work is executed, not what to ex
 
 ## 14. Mechanical verification gates (Bash-capable contexts only)
 
-These five gates mechanically check a checkpoint draft before it is presented to the
+These six gates mechanically check a checkpoint draft before it is presented to the
 human. They require a raw tool-call transcript (built per the logging requirement below)
 and run wherever Bash is available — the `/baseline` orchestrator directly; for `/spec`,
 the ORCHESTRATOR runs them after the `analyst` subagent (which has no Bash) returns its
 draft — see the per-command wiring in each command file, which points here rather than
 restating the gate logic.
 
-**Raw-transcript logging (prerequisite for all five gates):** as `get_design_context` /
+**Raw-transcript logging (prerequisite for all six gates):** as `get_design_context` /
 `download_assets` / `get_variable_defs` calls are made during extraction, append each raw
 tool response verbatim to a scratch transcript file — not a summary, the actual returned
-text. Without this, the gates below have nothing to check against.
+text. For `download_assets` specifically, the hook that builds this transcript
+(`.claude/hooks/figma-transcript-capture.sh`) also fetches the export's own SVG body
+(size-capped, real photography exports excluded) and appends it too — the tool's own
+JSON response only ever carries an export URL, not the paint/opacity data inside it, so
+without the body fetch, gate 2 (completeness) would have nothing but a claim that a call
+happened, never what it actually returned. Without any of this, the gates below have
+nothing to check against.
 
 1. **Citation gate** (`validate-checkpoint-citations.sh <draft-file>`) — every
    value-bearing line (hex color / % / px) must carry a Figma node-id citation on the
@@ -463,12 +484,38 @@ text. Without this, the gates below have nothing to check against.
    verification-call evidence doesn't actually name the node the claim is about — the
    defect this gate exists for is a controller-caught real incident, not a hypothetical
    (a claim of "svg-confirmed" for a parent node backed only by a call on its child).
+6. **Sibling-instance coverage gate** (`validate-checkpoint-sibling-coverage.sh
+<raw-transcript-file>`) — **WARN-tier only, never blocks.** Groups node-ids that share
+   the same `data-name="X"` in `get_design_context` output (placed instances of the same
+   component) and flags any group where some members were never individually passed as
+   `nodeId` to a `download_assets`/`get_variable_defs` call. Deliberately blunt: it cannot
+   distinguish a state-varying sibling group (Normal/Hover/Press columns) from a purely
+   decorative repeat, so it over-flags on purpose rather than risk staying silent on a
+   real one — see the widened "coincidental match" rule earlier in §9 for the incident
+   this closes (three placed instances of one icon at 40%/100%/80% opacity, only one of
+   which had ever been individually deep-read). Every flag is a prompt to check or to
+   explicitly document the assumption, not proof of a defect by itself.
 
 **On any BLOCKING gate failing:** do not present the checkpoint yet. Re-verify each
 flagged item against the real source (never from memory), correct the draft, re-run the
-gate until it passes. Gate 5's warn tier does not block the checkpoint by itself — treat
-it as a prompt to add the missing tag before presenting, not a hard stop. **Scope
+gate until it passes. Gate 5's warn tier and gate 6 do not block the checkpoint by
+themselves — treat gate 5's warns as a prompt to add the missing tag, and gate 6's warns
+as a prompt to check or document, before presenting; neither is a hard stop. **Scope
 boundary, honest:** these gates check MECHANICAL properties (citation present, value
-present, deeper tool called on the right node-id, tags internally consistent) — none of
-them verify that a cited/tagged/extracted value is itself CORRECT. That remains
-human/tool-call verification.
+present, deeper tool called on the right node-id, tags internally consistent, sibling
+instances individually read) — none of them verify that a cited/tagged/extracted value
+is itself CORRECT. That remains human/tool-call verification.
+
+**A residual gap no gate can close, named honestly rather than forced into a mechanical
+answer:** a styled value that is never written down in ANY claim-shaped form — not
+cited, not tagged, folded into vague prose instead of its own citable line — cannot be
+caught by any of the six gates above, because a gate can only check text that was
+actually written; it has no ground truth for what SHOULD have been written. A real
+incident: an accordion Active-state border's true value (a gradient to transparent) was
+incidentally present in a transcript response the whole time, but got folded into a
+generic, untagged sentence instead of its own `[Verify-node:]`-backed claim — invisible
+to gate 5 because the sentence never looked like a verification claim at all. **"All six
+gates pass" must never be read as "every value was correctly extracted" or "every
+per-instance override was checked"** — it means the claims that were written down are
+internally consistent with the transcript, nothing more. Closing this specific residual
+is a human/controller full-re-read responsibility, not a gate's.
