@@ -301,6 +301,13 @@ exhausted**, never from the primary read alone. **This is not advisory — it is
 ARTIFACT.** Before raising any "absent / unextractable / undefined / no counterpart" flag, produce and attach
 a coverage inventory to the spec, in order:
 
+**Coverage scope depends on what is being read — do not over-sweep, do not under-sweep:**
+
+- **`/baseline` and ROUTE/PAGE `/spec` tickets:** the full page + top-level-node enumeration (points 1–2) is load-bearing — a route/page's completeness genuinely depends on finding every sibling frame (the defect class that once let a whole mobile page-frame go missing). Enumerate all pages and all top-level nodes of all types per points 1–2.
+- **COMPONENT / PRIMITIVE `/spec` tickets:** the authoritative source for the component's variants/states is the design-system/library variant set (point 3); for its responsive behaviour, the component's OWN instances across the breakpoint frames the ticket references (point 4). A component's definition does NOT live in the document's other unrelated pages — a document-wide page enumeration (points 1–2) is NOT required and must not be performed for breadth's sake; read the component itself across its breakpoints instead. Do NOT assert a document-wide page count (e.g. "exactly N pages, none skipped") the ticket did not need and did not fully take — an unneeded, unverified completeness claim is itself a defect. An absence claim about the component's states is valid against point 3; an absence claim about its responsive layout is valid against point 4.
+
+Points 3–8 apply to every ticket. The numbered list is the full menu; the scope above says which entries are load-bearing for the ticket at hand.
+
 1. **All pages** of the relevant Figma file, listed (skip only genuinely empty/service pages, and say so —
    "skipped: empty" is part of the inventory, not a silent omission).
 2. **All top-level nodes on each relevant page — of ALL types, not frames only** (frames, groups, sections,
