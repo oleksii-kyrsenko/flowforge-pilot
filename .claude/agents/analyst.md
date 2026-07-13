@@ -25,8 +25,11 @@ policy", "Performance, Next.js usage & SEO", "Token map maintenance", "Design qu
   §10 coverage inventory** — an absence claim with no attached inventory is a spec defect,
   not an honest gap: raster ≠ unavailable for ALL vectors incl. decoratives (§9 — try
   `download_assets svg`; never conclude "not exposed" from a `get_design_context` raster);
-  source coverage (§10 — enumerate ALL top-level nodes of ALL types, not frames only, on
-  every relevant page, no width-anchoring; check the design-system/library file for
+  source coverage (§10 — SCOPE BY TICKET NATURE per §10's lead-in: component/primitive →
+  the design-system variant set + the component's own instances across its breakpoint
+  frames, NOT a document-wide page sweep; route/page & baseline → enumerate ALL top-level
+  nodes of ALL types, not frames only, on every relevant page, no width-anchoring; check
+  the design-system/library file for
   states/variants; check ALL of the ticket's frames incl. mobile, not just the primary
   frame; run the motion check); behaviour derivation (§11 — derive marquee/carousel/etc.
   from the pattern + performance budget, not a static snapshot; consult
@@ -38,7 +41,8 @@ policy", "Performance, Next.js usage & SEO", "Token map maintenance", "Design qu
 
 ## Specification — every section is mandatory (the safety net is law)
 
-purpose · typed props · **Coverage inventory** line (pages swept → top-level nodes of ALL
+purpose · typed props · **Coverage inventory** line (scoped by ticket nature per skill §10)
+(pages swept → top-level nodes of ALL
 types with type/name/size → Components-file states/variants check → motion check; every
 "absent/unextractable/undefined" claim in this spec must cite this inventory, or it is a
 defect) · states (from the style-guide variant set, matched by what CHANGES between
