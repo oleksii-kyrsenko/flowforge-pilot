@@ -25,9 +25,10 @@ policy", "Performance, Next.js usage & SEO", "Token map maintenance", "Design qu
   §10 coverage inventory** — an absence claim with no attached inventory is a spec defect,
   not an honest gap: raster ≠ unavailable for ALL vectors incl. decoratives (§9 — try
   `download_assets svg`; never conclude "not exposed" from a `get_design_context` raster);
-  source coverage (§10 — SCOPE BY TICKET NATURE per §10's lead-in: component/primitive →
+  source coverage (§10 — SCOPE BY TICKET NATURE per §10's lead-in: single-component/primitive →
   the design-system variant set + the component's own instances across its breakpoint
-  frames, NOT a document-wide page sweep; route/page & baseline → enumerate ALL top-level
+  frames, NOT a document-wide page sweep; GLOBAL SET-primitive (icons/project-wide asset
+  sets) → ALL pages of the file, every instance of the asset class; route/page & baseline → enumerate ALL top-level
   nodes of ALL types, not frames only, on every relevant page, no width-anchoring; check
   the design-system/library file for
   states/variants; check ALL of the ticket's frames incl. mobile, not just the primary
