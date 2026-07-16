@@ -75,10 +75,10 @@ This is confirmed at the normal spec-approval checkpoint below — not a separat
   silently → design questions), an **Animations** line (cite the behaviour→library map
   default as reference, never a pin), a **Reuse check** line, a11y, acceptance criteria, a
   **Test plan** line, and an **SEO requirements** line for route/page-level tickets.
-- Post the spec as a Jira comment using the **adf-formatting** skill
-  (`contentFormat: "adf"`, never raw Markdown — hard rule 8) and duplicate it to
-  `docs/specs/<JIRA-KEY>.md`. Append any new design questions to
-  `docs/design-questions.md`.
+- Write the spec to `docs/specs/<JIRA-KEY>.md`. Append any new design questions to
+  `docs/design-questions.md`. (Jira-comment posting of the full spec is deferred — see
+  CLAUDE.md §4 ambition levels; the ticket lifecycle transitions/assignee claim above
+  still run as usual, unaffected.)
 
 ## Mechanical verification gates (orchestrator step, before the spec-approval checkpoint)
 
@@ -114,7 +114,7 @@ were already exercised by an earlier `/baseline`.
 
 ## Then STOP
 
-Per hard rule 2, after posting the spec STOP and wait for explicit human approval.
-Do not start `/build`. (The Jira comment itself is auto-posted — a NEW comment is
-class A per hard rule 3/§9.1, no confirm; the confirm gate here is for the human's
-spec approval, not for posting.)
+Per hard rule 2, after writing the spec STOP and wait for explicit human approval.
+Do not start `/build`. (No Jira comment is posted at this stage — deferred, see
+CLAUDE.md §4 ambition levels; only docs/specs/<JIRA-KEY>.md and design-questions.md
+are written here.)
