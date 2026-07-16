@@ -38,7 +38,10 @@ gate, at its stricter (build) threshold — one gate, two thresholds, not a dupl
 ## Do
 
 - Update the base first: `git fetch origin && git checkout dev && git pull`.
-- Create branch `flowforge/<JIRA-KEY>-<slug>` from up-to-date `dev` (hard rule 1).
+- **Branch:** `flowforge/<JIRA-KEY>-<slug>` normally already exists — created and pushed
+  by `/spec`'s own commit node. `git fetch origin` and check it out. If it does not exist
+  (an edge case: a ticket whose `/spec` predates this rule, or a non-UI ticket), create it
+  fresh from up-to-date `dev` (hard rule 1).
 - Implement the component per the approved spec, following the canonical `src/`
   structure. Server-first RSC; `'use client'` only at leaf interactivity.
 - **Derived behaviour (carousel / marquee / accordion / etc.):** consult
@@ -91,7 +94,9 @@ gate, at its stricter (build) threshold — one gate, two thresholds, not a dupl
   Never bypass hooks (`--no-verify` is forbidden).
 - **Commit (node 1 — see CLAUDE.md §11 "Git steps — commit & push nodes"):** after the gate is
   green, `git commit` the component code + unit tests (+ any token additions). Only after green —
-  never a red gate; no `--no-verify`. This commit also carries the `/spec` artifacts and the
-  `metrics.csv` rows already in the working tree. **Do not push here — push is `/ship`.**
+  never a red gate; no `--no-verify`. The `/spec` artifacts (docs/specs, design-questions,
+  spec-stage metrics rows) were already committed by `/spec`'s own commit node — this
+  commit adds only the build-stage code/tests/tokens/token-docs and build-stage metrics
+  rows. **Do not push here — push is `/ship`.**
 
 Do not open a PR here — that is `/ship`.
