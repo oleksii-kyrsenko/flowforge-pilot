@@ -2,6 +2,8 @@
 
 Append at the top; same entry format as before; see the MAINTENANCE RULE in CLAUDE.md.
 
+- 2026-07-16 — **v3.92→v3.93, session 18: corrected the post-merge cleanup rule's delete command — `git branch -d` → gh-verified `git branch -D`.** The v3.92 wording said `git branch -d`, but hard rule 1 squash-merges every PR into `dev`, so the branch tip is never an ancestor of `dev` and `-d` (safe delete) always refuses it — making the rule non-functional for its only use case. Now: confirm the merge out-of-band via `gh pr list --state merged --head <branch>`, then force-delete with `-D`. Origin: caught applying v3.92 for real on the session-18 branch backlog — `-d` refused all seven squash-merged branches; deletion succeeded only via `-D` after gh-confirming each PR's merged state. Engine edit → freeze-counter stays 0/3.
+
 - 2026-07-16 — **v3.91→v3.92, session 18: added post-merge cleanup (checkout dev + pull + delete local branch on merge confirmation) to Git steps.** Origin: restored — this was standing practice, not a new behavior. Engine edit → freeze-counter stays 0/3.
 
 - 2026-07-16 — **v3.90→v3.91, session 18: fixed a single-source drift in the §11 `/build` bullet's prose (said it creates the branch; build.md and the node 0a/0b model already say it normally checks out an existing one) — now matches.** Origin: caught immediately after PR #50 while reviewing its diff. Doc-wording-only fix, no behavior change. Engine edit → freeze-counter stays 0/3.
