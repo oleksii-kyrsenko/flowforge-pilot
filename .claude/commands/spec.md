@@ -17,11 +17,13 @@ links (e.g. desktop + mobile) — extract and dedup across ALL of them.
 
 1. **FIRST**, before anything else, append a `start` row to `docs/metrics/metrics.csv`:
    `<JIRA-KEY>,spec,start,<TS>` where `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`.
-2. **LAST**, after the spec is posted, append
-   `<JIRA-KEY>,spec,done,<TS>,<CLEAN_SECONDS>,<WAIT_SECONDS>` — compute
-   `<CLEAN_SECONDS>`/`<WAIT_SECONDS>` from this run's own start/pause/resume rows
-   already written above (per CLAUDE.md §11 "Metrics & logging"). Never skip, backfill,
-   or estimate these values from memory.
+2. **LAST**, after the spec is posted: (a) append
+   `<JIRA-KEY>,spec,done,<TS>,<CLEAN_DURATION>,,` — `<CLEAN_DURATION>` computed against
+   the immediately preceding row for this ticket+stage, per CLAUDE.md §11's per-row
+   duration rule (`HH:MM:SS`); (b) immediately append the stage-total row
+   `<JIRA-KEY>,spec,total,<TS>,,,<TOTAL_DURATION>` reusing the same `<TS>`, per CLAUDE.md
+   §11's stage-total rule. Never skip, backfill, or estimate any of these values from
+   memory.
 3. **Also:** at every STOP point in this command (the UI-content preflight, the
    Reuses-dependency gate, and the spec-approval checkpoint below), append `pause`
    immediately before halting and `resume` as the first action on resuming — see

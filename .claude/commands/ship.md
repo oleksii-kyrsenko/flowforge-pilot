@@ -14,12 +14,18 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
 
 1. **FIRST**: append `<JIRA-KEY>,ship,start,<TS>` to `docs/metrics/metrics.csv`
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
-2. **LAST**: append `<JIRA-KEY>,ship,done,<TS>,<CLEAN_SECONDS>,<WAIT_SECONDS>` —
-   computed from this run's own start/pause/resume rows (per CLAUDE.md §11 "Metrics &
-   logging"), then append a one-line cycle summary to docs/progress-log.md (date,
-   ticket, stages completed), then **commit (node 4 — see CLAUDE.md §11 "Git steps —
-   commit & push nodes"):** `git commit` the ship-done metric row + cycle summary as
-   `/ship`'s last action (after the PR is open), and push (re-push).
+2. **LAST**: (a) append `<JIRA-KEY>,ship,done,<TS>,<CLEAN_DURATION>,,` —
+   `<CLEAN_DURATION>` computed against the immediately preceding row, per CLAUDE.md §11's
+   per-row duration rule (`HH:MM:SS`); (b) immediately append the stage-total row
+   `<JIRA-KEY>,ship,total,<TS>,,,<TOTAL_DURATION>` reusing the same `<TS>`, per CLAUDE.md
+   §11's stage-total rule; (c) immediately append the whole-task total row
+   `<JIRA-KEY>,task,total,<TS>,,,<TASK_TOTAL_DURATION>` reusing the same `<TS>`, per
+   CLAUDE.md §11's task-total rule — summing every stage-total row already written for
+   this ticket (spec+build+review+ship); (d) append a one-line cycle summary to
+   docs/progress-log.md (date, ticket, stages completed); then **commit (node 4 — see
+   CLAUDE.md §11 "Git steps — commit & push nodes"):** `git commit` the ship-done metric
+   rows + cycle summary as `/ship`'s last action (after the PR is open), and push
+   (re-push).
 3. **Also:** at every STOP point in this command (the missing-precondition preflight,
    the confirm before opening the PR, and the confirm before the Review transition),
    append `pause` immediately before halting and `resume` as the first action on

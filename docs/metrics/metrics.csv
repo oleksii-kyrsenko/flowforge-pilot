@@ -1,1 +1,1 @@
-ticket,stage,event,timestamp_iso,clean_seconds,wait_seconds
+ticket,stage,event,timestamp_iso,clean_duration,wait_duration,total_duration
