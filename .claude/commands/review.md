@@ -8,7 +8,7 @@ definition lives in `CLAUDE.md` section 11 ("Roles and commands" → `/review`, 
 it and follow it exactly.
 
 Arguments: `$ARGUMENTS` = optional `<JIRA-KEY>` for metrics labelling; if omitted,
-derive the key from the current branch name (`flowforge/<JIRA-KEY>-...`).
+derive the key from the current branch name (`feat/<JIRA-KEY>-...`).
 
 ## Metrics (mandatory — first and last action)
 

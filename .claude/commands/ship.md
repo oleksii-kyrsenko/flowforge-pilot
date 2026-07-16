@@ -24,7 +24,7 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
 Per CLAUDE.md §11 "Ticket lifecycle & board statuses", verify the preconditions:
 
 - ticket is **In Progress**;
-- branch `flowforge/<JIRA-KEY>-*` exists with commits ahead of `dev`;
+- branch `feat/<JIRA-KEY>-*` exists with commits ahead of `dev`;
 - `docs/specs/<JIRA-KEY>.md` is present.
 
 If **ANY** precondition is missing → **STOP and flag** exactly what is missing and the likely

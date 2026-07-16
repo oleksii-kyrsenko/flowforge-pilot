@@ -38,7 +38,7 @@ gate, at its stricter (build) threshold — one gate, two thresholds, not a dupl
 ## Do
 
 - Update the base first: `git fetch origin && git checkout dev && git pull`.
-- **Branch:** `flowforge/<JIRA-KEY>-<slug>` normally already exists — created and pushed
+- **Branch:** `feat/<JIRA-KEY>-<slug>` normally already exists — created and pushed
   by `/spec`'s own commit node. `git fetch origin` and check it out. If it does not exist
   (an edge case: a ticket whose `/spec` predates this rule, or a non-UI ticket), create it
   fresh from up-to-date `dev` (hard rule 1).
