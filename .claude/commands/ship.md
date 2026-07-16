@@ -14,10 +14,12 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
 
 1. **FIRST**: append `<JIRA-KEY>,ship,start,<TS>` to `docs/metrics/metrics.csv`
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
-2. **LAST**: append `<JIRA-KEY>,ship,done,<TS>`, then append a one-line cycle summary
-   to docs/progress-log.md (date, ticket, stages completed), then **commit (node 4 — see
-   CLAUDE.md §11 "Git steps — commit & push nodes"):** `git commit` the ship-done metric row +
-   cycle summary as `/ship`'s last action (after the PR is open), and push (re-push).
+2. **LAST**: append `<JIRA-KEY>,ship,done,<TS>,<CLEAN_SECONDS>,<WAIT_SECONDS>` —
+   computed from this run's own start/pause/resume rows (per CLAUDE.md §11 "Metrics &
+   logging"), then append a one-line cycle summary to docs/progress-log.md (date,
+   ticket, stages completed), then **commit (node 4 — see CLAUDE.md §11 "Git steps —
+   commit & push nodes"):** `git commit` the ship-done metric row + cycle summary as
+   `/ship`'s last action (after the PR is open), and push (re-push).
 3. **Also:** at every STOP point in this command (the missing-precondition preflight,
    the confirm before opening the PR, and the confirm before the Review transition),
    append `pause` immediately before halting and `resume` as the first action on
