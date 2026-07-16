@@ -2,6 +2,8 @@
 
 Append at the top; same entry format as before; see the MAINTENANCE RULE in CLAUDE.md.
 
+- 2026-07-16 — **v3.95→v3.96, session 18: replaced the seconds-based done-only duration design with per-row HH:MM:SS deltas (against the PRECEDING row) plus a stage-total row after each stage's own done row plus a single whole-task-total row appended by /ship at the very end of the cycle.** Third column `total_duration` added; `clean_seconds`/`wait_seconds` renamed `clean_duration`/`wait_duration`. Supersedes v3.94→v3.95 in the same session. Engine edit → freeze-counter stays 0/3.
+
 - 2026-07-16 — **v3.94→v3.95, session 18: metrics.csv's `done` row now carries computed `clean_seconds`/`wait_seconds` directly (blank on start/pause/resume rows), computed by the command itself from its own already-written rows — no more manual arithmetic needed to see actual time spent per stage.** Header row updated; existing data rows untouched (INV-8). Origin: requested directly — raw timestamps alone required manual computation every time. Engine edit → freeze-counter stays 0/3.
 
 - 2026-07-16 — **v3.93→v3.94, session 18: added a third coverage class to design-extraction §10 nature-scoping — GLOBAL SET-primitive (icons/project-wide asset sets) → sweep ALL pages for every instance of the asset class; the ticket's own member list is a hint, not the coverage boundary.** Single-component class renamed for contrast; mirrored in CLAUDE.md /spec bullet + analyst.md. Origin: the FF-9 /spec run (discarded) inventoried only the ticket's 8 named icons across the 2 pages they sat on, instead of sweeping the whole file for all project icons — the run is NOT clean, Ф5 stays 1/3. Engine edit → freeze-counter unaffected (run already discarded).
