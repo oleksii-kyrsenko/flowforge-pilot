@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.92 · Date: 2026-07-16 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.93 · Date: 2026-07-16 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -266,7 +266,7 @@ The branch/merge model is hard rule 1 (branches only from up-to-date `dev`; PRs 
 - **Boundaries:** never `--no-verify`; a commit on a red gate is forbidden; commit/push the feature branch only. Ad-hoc correction commits are fine — squash-merge collapses all branch commits into one `dev` commit.
 - **Metric-row binding — RESOLVED (was deferred):** each command now commits its own artifacts and its own metrics rows in its own node — `/spec` at node 0b, `/build` at node 1, etc. — rather than one command's commit sweeping another's leftovers.
 - `/spec` now has its own dedicated branch-creation step (0a) and commit+push node (0b, above) — not a "setup/maintenance" carve-out, but a cycle command with its own node, specifically so a different developer can pick up `/build` from an already-pushed branch. Setup/maintenance commands (`/baseline`, `/design-fixes`) still commit on their own approval checkpoint, same principle. `/tickets` makes no commit (Jira-only).
-- **Post-merge cleanup:** whenever a PR is confirmed merged (the human states it, in chat or otherwise), before continuing any other work: `git checkout dev && git pull`, then `git branch -d <feature-branch>` to remove the now-stale local branch. The remote copy is already auto-deleted by the GitHub branch ruleset (hard rule 1) — this only cleans up the local clone. Applies to every merged branch alike: engine `chore/*` branches and ticket `feat/*` branches.
+- **Post-merge cleanup:** whenever a PR is confirmed merged (the human states it, in chat or otherwise), before continuing any other work: `git checkout dev && git pull`, then delete the now-stale local branch. Because hard rule 1 squash-merges every PR into `dev`, the branch tip is never an ancestor of `dev`, so `git branch -d` (safe delete) always refuses it — instead confirm the merge out-of-band (`gh pr list --state merged --head <feature-branch>` returns the merged PR) and then `git branch -D <feature-branch>`. The remote copy is already auto-deleted by the GitHub branch ruleset (hard rule 1) — this only cleans up the local clone. Applies to every merged branch alike: engine `chore/*` branches and ticket `feat/*` branches.
 
 ### Project structure (canonical; `/build` MUST follow it)
 
