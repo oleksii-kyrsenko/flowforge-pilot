@@ -112,6 +112,21 @@ applies whether `/baseline` has run on this project yet or not — `/spec` may b
 command run on a project (see skill §8's fallback path), so it cannot assume the gates
 were already exercised by an earlier `/baseline`.
 
+## Commit & push (immediately after writing, before the final STOP)
+
+Once the spec is approved and written (`docs/specs/<JIRA-KEY>.md`, `docs/design-questions.md`
+if changed, the metrics `done` row):
+
+1. Update the base: `git fetch origin && git checkout dev && git pull`.
+2. Branch: if `flowforge/<JIRA-KEY>-<slug>` does not already exist (local or `origin`),
+   create it from up-to-date `dev`; if it already exists (e.g. a prior `/spec` run on
+   this ticket), check it out instead of creating a duplicate.
+3. `git commit` the spec artifacts — message `chore(<JIRA-KEY>): spec artifacts`.
+4. `git push -u origin flowforge/<JIRA-KEY>-<slug>` — makes the branch and its spec
+   commit visible to any developer, independent of who runs the eventual `/build`.
+5. Do NOT open a PR here — the PR still opens at `/ship`, base `dev`, carrying every
+   commit (spec + build + review + ship docs) on this one branch.
+
 ## Then STOP
 
 Per hard rule 2, after writing the spec STOP and wait for explicit human approval.

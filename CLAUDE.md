@@ -4,7 +4,7 @@
 >
 > **MAINTENANCE RULE (mandatory):** every time anything is added or changed — a new command, agent, convention, decision, metric, blocker, or scope adjustment — it MUST be recorded in this file immediately (progress log in docs/progress-log.md; metrics in section 7; TODOs in section 8; rules/conventions in section 11). Nothing lives only in chat history or in someone's head. If it is not in this file or its linked journals (docs/progress-log.md, docs/design-tokens.md, docs/design-questions.md, docs/metrics/), it does not exist. **A change to the law itself — this file or any engine file (`.claude/`, `.mcp.json`, engine config) — additionally bumps the Version line below: one law-changing PR = one version bump.**
 >
-> Version: 3.86 · Date: 2026-07-13 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
+> Version: 3.87 · Date: 2026-07-16 · Owner: Frontend Developer (Next.js) · Language: EN (translated from RU v2.1)
 
 ---
 
@@ -256,14 +256,15 @@ This is the default for every visual family across the project — buttons, link
 
 The branch/merge model is hard rule 1 (branches only from up-to-date `dev`; PRs into `dev` squash-merged; human-only merge). The per-cycle commit/push steps — the orchestrator is the only git actor (subagents write only to the working tree):
 
-- **Node 1 — `/build`:** `git commit` component code + unit tests (+ any `@theme` / `docs/design-tokens.md` token additions) **only after the green gate** (lint/typecheck/test:run). This commit also sweeps the `/spec` artifacts already in the tree (`docs/specs/<KEY>.md`, design-questions) and the `metrics.csv` rows present so far.
+- **Node 0 — `/spec` (on approval):** update the base (`git fetch origin && git checkout dev && git pull`); create branch `flowforge/<JIRA-KEY>-<slug>` from up-to-date `dev` (hard rule 1) — or, if it already exists, check it out instead of creating a duplicate; `git commit` the spec artifacts (`docs/specs/<JIRA-KEY>.md`, `docs/design-questions.md` if changed, the spec-stage `metrics.csv` rows); **`git push -u origin flowforge/<JIRA-KEY>-<slug>` immediately** — makes the ticket branch and its spec commit visible to any developer, independent of who eventually runs `/build`. No PR opens here.
+- **Node 1 — `/build`:** checkout the existing `flowforge/<JIRA-KEY>-<slug>` branch (created by `/spec`'s node 0 — the normal path) — `git fetch origin` first if it isn't local yet; if it does not exist (an edge case: a ticket whose `/spec` predates this rule, or a non-UI ticket), create it fresh from up-to-date `dev`. `git commit` the component code + unit tests (+ any `@theme` / `docs/design-tokens.md` token additions) **only after the green gate** (lint/typecheck/test:run), plus the build-stage `metrics.csv` rows. The `/spec` artifacts were already committed at node 0 — this commit adds only the build-stage content.
 - **Node 2 — `/review` (CONDITIONAL):** if review produced fixes, `git commit` them after the gate is green again; if review found nothing to fix, there is **no** node-2 commit.
 - **Node 3 — `/ship` (a):** `git commit` the doc-writer artifacts (CHANGELOG, README-if-structural) before `gh pr create`.
 - **Node 4 — `/ship` (b):** `git commit` the ship-done metric row + cycle summary as `/ship`'s **last** action (after the PR is open).
-- **Push — `/ship`:** `git push -u origin <branch>` (**feature branch ONLY, never `dev`/`main`** — hard rule 1) at `/ship`; **re-push as later commits accrue** (the open PR auto-updates).
+- **Push — `/spec` (immediate, node 0) and `/ship` (node 3/4 onward):** `/spec` pushes once immediately on approval (above). `/ship` pushes the accrued build/review/ship commits (`git push -u origin <branch>`, **feature branch ONLY, never `dev`/`main`** — hard rule 1) and re-pushes as later commits accrue (the open PR auto-updates).
 - **Boundaries:** never `--no-verify`; a commit on a red gate is forbidden; commit/push the feature branch only. Ad-hoc correction commits are fine — squash-merge collapses all branch commits into one `dev` commit.
-- **Metric-row binding (DESCRIPTION, not a guarantee):** metric rows accrue in the working tree as each command runs; each command's commit-node sweeps whatever rows are present at commit time; `/spec`'s rows ride node 1. This describes current behavior — it is **not** a guarantee that each command commits its own rows; the deterministic alternative (each command commits its own rows in its own node) is a **deferred engine question, not current behavior**.
-- Setup/maintenance commands (`/baseline`, `/design-fixes`) commit on their **approval checkpoint**, not these cycle nodes; `/tickets` makes no commit (Jira-only).
+- **Metric-row binding — RESOLVED (was deferred):** each command now commits its own artifacts and its own metrics rows in its own node — `/spec` at node 0, `/build` at node 1, etc. — rather than one command's commit sweeping another's leftovers.
+- `/spec` now has its own dedicated commit+push node (0, above) — not a "setup/maintenance" carve-out, but a cycle command with its own node, specifically so a different developer can pick up `/build` from an already-pushed branch. Setup/maintenance commands (`/baseline`, `/design-fixes`) still commit on their own approval checkpoint, same principle. `/tickets` makes no commit (Jira-only).
 
 ### Project structure (canonical; `/build` MUST follow it)
 
