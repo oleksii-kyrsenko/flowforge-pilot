@@ -19,6 +19,10 @@ links (e.g. desktop + mobile) — extract and dedup across ALL of them.
    `<JIRA-KEY>,spec,start,<TS>` where `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`.
 2. **LAST**, after the spec is posted, append `<JIRA-KEY>,spec,done,<TS>`.
    Never skip or backfill these rows from memory.
+3. **Also:** at every STOP point in this command (the UI-content preflight, the
+   Reuses-dependency gate, and the spec-approval checkpoint below), append `pause`
+   immediately before halting and `resume` as the first action on resuming — see
+   CLAUDE.md §11 "Metrics & logging" for the mechanism.
 
 ## Ticket lifecycle (AUTO, at the start — after the metrics `start` row, before reading the ticket)
 

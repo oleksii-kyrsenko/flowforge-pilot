@@ -18,6 +18,10 @@ Arguments: `$ARGUMENTS` = `<JIRA-KEY>`.
    to docs/progress-log.md (date, ticket, stages completed), then **commit (node 4 — see
    CLAUDE.md §11 "Git steps — commit & push nodes"):** `git commit` the ship-done metric row +
    cycle summary as `/ship`'s last action (after the PR is open), and push (re-push).
+3. **Also:** at every STOP point in this command (the missing-precondition preflight,
+   the confirm before opening the PR, and the confirm before the Review transition),
+   append `pause` immediately before halting and `resume` as the first action on
+   resuming — see CLAUDE.md §11 "Metrics & logging" for the mechanism.
 
 ## Preflight (at the start, BEFORE doc-writer/PR)
 

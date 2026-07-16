@@ -16,6 +16,9 @@ explicitly approved (hard rule 2) — if not, stop and ask.
 1. **FIRST**: append `<JIRA-KEY>,build,start,<TS>` to `docs/metrics/metrics.csv`
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
 2. **LAST**: append `<JIRA-KEY>,build,done,<TS>`.
+3. **Also:** if the Status-preflight anomaly STOP fires (see below), append `pause`
+   immediately before halting and `resume` as the first action on resuming — see
+   CLAUDE.md §11 "Metrics & logging" for the mechanism.
 
 ## Status preflight (at the start)
 

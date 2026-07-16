@@ -25,6 +25,9 @@ Arguments: `$ARGUMENTS` = either the literal word `export`, or the designer's re
    is the full command name `design-fixes`, NOT `fixes`; `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`;
    use a short batch label for the ticket column, or a `<JIRA-KEY>` if the reply maps to one).
 2. **LAST**: append the matching `done` row (same ticket + stage).
+3. **Also:** at the confirm-before-opening-the-PR STOP (see below), append `pause`
+   immediately before halting and `resume` as the first action on resuming — see
+   CLAUDE.md §11 "Metrics & logging" for the mechanism.
 
 ## Mode: `export`
 
