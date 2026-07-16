@@ -14,7 +14,9 @@ derive the key from the current branch name (`feat/<JIRA-KEY>-...`).
 
 1. **FIRST**: append `<JIRA-KEY>,review,start,<TS>` to `docs/metrics/metrics.csv`
    (`<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`).
-2. **LAST**: append `<JIRA-KEY>,review,done,<TS>`.
+2. **LAST**: append `<JIRA-KEY>,review,done,<TS>,<CLEAN_SECONDS>,<WAIT_SECONDS>` —
+   computed from this run's own start/pause/resume rows (per CLAUDE.md §11 "Metrics &
+   logging"; `<WAIT_SECONDS>` is 0 on the normal no-STOP path).
 
 ## Do
 

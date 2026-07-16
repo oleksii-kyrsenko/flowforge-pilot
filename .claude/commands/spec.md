@@ -17,8 +17,11 @@ links (e.g. desktop + mobile) — extract and dedup across ALL of them.
 
 1. **FIRST**, before anything else, append a `start` row to `docs/metrics/metrics.csv`:
    `<JIRA-KEY>,spec,start,<TS>` where `<TS>` = `date -u +%Y-%m-%dT%H:%M:%SZ`.
-2. **LAST**, after the spec is posted, append `<JIRA-KEY>,spec,done,<TS>`.
-   Never skip or backfill these rows from memory.
+2. **LAST**, after the spec is posted, append
+   `<JIRA-KEY>,spec,done,<TS>,<CLEAN_SECONDS>,<WAIT_SECONDS>` — compute
+   `<CLEAN_SECONDS>`/`<WAIT_SECONDS>` from this run's own start/pause/resume rows
+   already written above (per CLAUDE.md §11 "Metrics & logging"). Never skip, backfill,
+   or estimate these values from memory.
 3. **Also:** at every STOP point in this command (the UI-content preflight, the
    Reuses-dependency gate, and the spec-approval checkpoint below), append `pause`
    immediately before halting and `resume` as the first action on resuming — see
