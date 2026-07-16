@@ -37,6 +37,13 @@ asymmetry). Idempotent and forward-only — never move a ticket backwards.
    is empty or not the current user → set it to the current user; if already the current
    user → skip.
 4. Transition **31** (In Progress); if already In Progress or further → skip.
+5. **Branch (moved here from the post-approval commit node, session 18):** update the
+   base (`git fetch origin && git checkout dev && git pull`); create branch
+   `feat/<JIRA-KEY>-<slug>` from up-to-date `dev` — or, if it already exists, check it
+   out instead of creating a duplicate. This happens now, right after the ticket reaches
+   In Progress — not at spec approval — so this run's own work (Figma/Jira reads, draft
+   authoring) happens with the ticket's own branch already checked out. No commit yet;
+   the branch may sit with zero commits until the spec is approved and written.
 
 ## UI-content preflight (before any Figma read)
 
@@ -121,14 +128,12 @@ were already exercised by an earlier `/baseline`.
 Once the spec is approved and written (`docs/specs/<JIRA-KEY>.md`, `docs/design-questions.md`
 if changed, the metrics `done` row):
 
-1. Update the base: `git fetch origin && git checkout dev && git pull`.
-2. Branch: if `feat/<JIRA-KEY>-<slug>` does not already exist (local or `origin`),
-   create it from up-to-date `dev`; if it already exists (e.g. a prior `/spec` run on
-   this ticket), check it out instead of creating a duplicate.
-3. `git commit` the spec artifacts — message `chore(<JIRA-KEY>): spec artifacts`.
-4. `git push -u origin feat/<JIRA-KEY>-<slug>` — makes the branch and its spec
-   commit visible to any developer, independent of who runs the eventual `/build`.
-5. Do NOT open a PR here — the PR still opens at `/ship`, base `dev`, carrying every
+1. The ticket branch `feat/<JIRA-KEY>-<slug>` already exists and is checked out —
+   created at the start of this run, right after the ticket-lifecycle advance (see
+   above), not here.
+2. `git commit` the spec artifacts — message `chore(<JIRA-KEY>): spec artifacts`.
+3. `git push -u origin feat/<JIRA-KEY>-<slug>`.
+4. Do NOT open a PR here — the PR still opens at `/ship`, base `dev`, carrying every
    commit (spec + build + review + ship docs) on this one branch.
 
 ## Then STOP
