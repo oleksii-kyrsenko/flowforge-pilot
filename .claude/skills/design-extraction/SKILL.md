@@ -505,7 +505,7 @@ nothing to check against.
    defect this gate exists for is a controller-caught real incident, not a hypothetical
    (a claim of "svg-confirmed" for a parent node backed only by a call on its child).
 6. **Sibling-instance coverage gate** (`validate-checkpoint-sibling-coverage.sh
-<raw-transcript-file>`) — **WARN-tier only, never blocks.** Groups node-ids that share
+<raw-transcript-file> <draft-file>`) — **WARN-tier only, never blocks.** Groups node-ids that share
    the same `data-name="X"` in `get_design_context` output (placed instances of the same
    component) and flags any group where some members were never individually passed as
    `nodeId` to a `download_assets`/`get_variable_defs` call. Deliberately blunt: it cannot

@@ -1,36 +1,60 @@
 #!/usr/bin/env bash
-# Mechanical check, WARN-tier only (never blocks): groups node-ids that share the same
+# Mechanical check, TWO-TIER: (a) WARN (as before) — groups node-ids that share the same
 # `data-name="X"` in get_design_context output (placed instances of the same component)
 # and flags any group where SOME members were never individually passed as `nodeId` to a
-# download_assets/get_variable_defs call.
+# download_assets/get_variable_defs call. (b) BLOCK (new) — for any such group, if the
+# draft asserts a "no variation" claim (e.g. "single-tone", "plain", "no per-instance
+# override") about that named glyph/value while FEWER THAN TWO of its instances were
+# individually deep-read, and the draft carries no explicit "only one instance exists"
+# escape note — that specific claim fails the gate. A structural sibling-coverage gap by
+# itself stays WARN (per the original rationale below); asserting universal non-variation
+# from insufficient evidence is a stronger, narrower claim that this escalation blocks.
 #
-# Why this exists: structural repetition of a component (the same icon/button placed
-# N times) says nothing about whether an INDEPENDENTLY OVERRIDABLE property — opacity,
-# color, blend-mode — is actually shared across those instances (skill §9's widened
-# "coincidental match" rule). A real incident: three placed instances of the same
-# Instagram icon carried opacity 40% / 100% / 80% respectively, and the flattened
-# get_design_context markup for the 100%-and-80% pair was textually IDENTICAL (neither
-# showed an opacity class) — so diffing the flattened classes would not have caught it
-# either. Only an independent deep-read per instance can.
+# Why this exists (original WARN rationale, unchanged): structural repetition of a
+# component (the same icon/button placed N times) says nothing about whether an
+# INDEPENDENTLY OVERRIDABLE property — opacity, color, blend-mode — is actually shared
+# across those instances (skill §9's widened "coincidental match" rule). A real incident:
+# three placed instances of the same Instagram icon carried opacity 40% / 100% / 80%
+# respectively, and the flattened get_design_context markup for the 100%-and-80% pair was
+# textually IDENTICAL (neither showed an opacity class) — so diffing the flattened
+# classes would not have caught it either. Only an independent deep-read per instance can.
 #
-# Deliberately BLUNT and WARN-only, not BLOCK: forcing every sibling instance of every
-# repeated component to get its own download_assets/get_variable_defs call would explode
-# call volume against the Figma MCP's rate limit (skill §13) and defeat §5's whole point
-# (dedup genuinely-identical repeats). This gate cannot tell a state-varying sibling
-# group (Normal/Hover/Press columns — exactly the case that broke) from a purely
-# decorative repeat (e.g. the same bullet icon reused with no state semantics) — that
+# Why the escalation (new): a bare sibling-coverage gap doesn't by itself claim anything
+# false — it just flags "not everything was checked," which may be a deliberate, correctly
+# documented assumption (§5 dedup). But when the DRAFT ITSELF asserts "this glyph has no
+# variation" from reading only one placement, that is a specific, falsifiable claim with
+# insufficient evidence — the same class of defect as an unbacked [Verify-node:] tag
+# (gate 5), just for a different claim-shape. A real incident (session 18): glyphs
+# classified "single-tone" in one /spec draft were reclassified "gradient + hardcoded
+# accent" in a later draft after checking more than one placement.
+#
+# Deliberately BLUNT for the base WARN tier still: forcing every sibling instance of
+# every repeated component to get its own download_assets/get_variable_defs call would
+# explode call volume against the Figma MCP's rate limit (skill §13) and defeat §5's
+# whole point (dedup genuinely-identical repeats). This gate cannot tell a state-varying
+# sibling group (Normal/Hover/Press columns) from a purely decorative repeat — that
 # distinction is the same reasoning-based, non-formulaic judgment skill §10.7 already
-# declines to reduce to a fixed rule. So this gate over-flags on purpose: every
-# partial/zero-coverage group is surfaced, and a human/agent decides which are worth a
-# follow-up call versus a documented "assumed identical, low risk because ..." note.
+# declines to reduce to a fixed rule. So the WARN tier over-flags on purpose; the BLOCK
+# escalation only fires on the narrower, explicit "no variation" claim-shape.
 #
-# Usage: validate-checkpoint-sibling-coverage.sh <raw-transcript-file>
-# Exit 0 always (WARN-tier) — this gate cannot fail the checkpoint by itself.
+# Usage: validate-checkpoint-sibling-coverage.sh <raw-transcript-file> <draft-file>
+# Exit 0 = no BLOCKING violations (WARN-tier flags may still have printed, non-fatal).
+# Exit 1 = one or more "no variation" claims are backed by fewer than two individually
+# deep-read instances and carry no explicit single-instance escape note.
 
 set -euo pipefail
 
 RAW="$1"
+DRAFT="$2"
 NODE_ID_PATTERN='[0-9]+:[0-9]+'
+
+# Case-insensitive trigger phrases for a "no variation" claim-shape. Deliberately a
+# fixed list, not a formula — matching this codebase's other gates' honest documentation
+# of pattern-matching limits (see the data-name-order note below): a claim phrased
+# entirely differently from every listed trigger will not be caught, a silent miss
+# rather than a crash.
+TRIGGER_PATTERN='single-tone|plain white|plain(,| and)? no variation|no variation|no per-instance|identical across|same across all instances|uniform across|no per-instance override'
+ESCAPE_PATTERN='only one instance|only reachable instance|only .* instance (exists|found|reachable)'
 
 # (node-id, name) pairs: matches the exact attribute order seen in every
 # get_design_context flattened-JSX response observed so far (`data-node-id="X:Y"
@@ -57,6 +81,7 @@ fi
 NAMES=$(printf '%s\n' "$PAIRS" | cut -f2 | sort -u)
 
 FLAGGED_GROUPS=0
+BLOCK_VIOLATIONS=0
 
 while IFS= read -r name; do
   [[ -z "$name" ]] && continue
@@ -89,17 +114,46 @@ while IFS= read -r name; do
     fi
     echo "  NOT individually deep-read: ${uncovered[*]}" >&2
   fi
+
+  # --- BLOCK escalation: does the draft assert "no variation" for this exact name,
+  # with fewer than two individually deep-read instances, and no escape note? ---
+  if [[ "${#covered[@]}" -lt 2 ]]; then
+    name_lines=$(grep -F -- "$name" "$DRAFT" || true)
+    if [[ -n "$name_lines" ]]; then
+      claim_lines=$(grep -iE "$TRIGGER_PATTERN" <<< "$name_lines" || true)
+      if [[ -n "$claim_lines" ]]; then
+        escaped_lines=$(grep -iE "$ESCAPE_PATTERN" <<< "$claim_lines" || true)
+        unescaped_count=$(comm -23 <(sort -u <<< "$claim_lines") <(sort -u <<< "$escaped_lines") | grep -c . || true)
+        if [[ "$unescaped_count" -gt 0 ]]; then
+          BLOCK_VIOLATIONS=$((BLOCK_VIOLATIONS+1))
+          echo "BLOCK: \"$name\" is claimed to have no variation (only ${#covered[@]} of ${#ids[@]} instances individually deep-read, no single-instance escape note):" >&2
+          echo "$claim_lines" | grep -viE "$ESCAPE_PATTERN" | sed 's/^/  -> /' >&2
+        fi
+      fi
+    fi
+  fi
 done <<< "$NAMES"
 
 if [[ "$FLAGGED_GROUPS" -gt 0 ]]; then
   echo "" >&2
-  echo "$FLAGGED_GROUPS sibling group(s) have partial or zero individual coverage. This is" >&2
-  echo "a WARN, not a BLOCK — structural repetition alone does not require every instance to" >&2
-  echo "be independently checked (skill §13 rate-limit + §5 dedup). Before presenting the" >&2
-  echo "checkpoint, decide per flagged group: either deep-read the uncovered instance(s), or" >&2
-  echo "explicitly note in the draft why they were assumed identical (e.g. purely decorative" >&2
-  echo "repeat, no state/column context suggesting per-instance variation)." >&2
+  echo "$FLAGGED_GROUPS sibling group(s) have partial or zero individual coverage. A bare" >&2
+  echo "coverage gap is a WARN, not a BLOCK by itself — structural repetition alone does not" >&2
+  echo "require every instance to be independently checked (skill §13 rate-limit + §5 dedup)." >&2
+  echo "Before presenting the checkpoint, decide per flagged group: either deep-read the" >&2
+  echo "uncovered instance(s), or explicitly note in the draft why they were assumed" >&2
+  echo "identical (e.g. purely decorative repeat, no state/column context suggesting" >&2
+  echo "per-instance variation)." >&2
 fi
 
-echo "OK (warn-tier): sibling-instance coverage check complete, $FLAGGED_GROUPS group(s) flagged."
+if [[ "$BLOCK_VIOLATIONS" -gt 0 ]]; then
+  echo "" >&2
+  echo "$BLOCK_VIOLATIONS \"no variation\" claim(s) failed: fewer than two individually" >&2
+  echo "deep-read instances back a claim of universal non-variation, and no single-instance" >&2
+  echo "escape note is present. Per skill §14 gate 6's escalation: either deep-read a second" >&2
+  echo "instance, downgrade the claim (do not assert universal non-variation), or add an" >&2
+  echo "explicit \"only one instance exists/reachable\" note if that is genuinely the case." >&2
+  exit 1
+fi
+
+echo "OK: sibling-instance coverage check complete, $FLAGGED_GROUPS group(s) flagged (warn-tier), 0 blocking \"no variation\" violations."
 exit 0
