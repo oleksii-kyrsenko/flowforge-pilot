@@ -59,6 +59,25 @@ supply the frame or confirm the ticket is intentionally non-UI. An honest non-UI
 (logic/hook, no UI content) proceeds normally: UI sections N/A with reasons, no Figma call,
 no invented tokens.
 
+## Coverage-scope decision (before any Figma call, from the ticket's own text)
+
+Before any Figma tool call — including the frame link(s) on the ticket itself — decide
+whether this ticket's deliverable requires DOCUMENT-WIDE page coverage, per skill §10's
+existing coverage-scope test (load-bearing full enumeration for `/baseline`/route-page/
+global-set-primitive tickets vs. component-scoped for single-component tickets). Base
+this decision on what the ticket's OWN description says the deliverable IS — never on
+whether a specific Figma node link happens to be present or absent on the ticket. A
+document-wide deliverable (e.g. "every icon in the project") remains document-wide even
+when the ticket also carries a specific frame link as a starting pointer — the presence
+of that link does not narrow the scope.
+
+If document-wide coverage is required: instruct the analyst that its FIRST Figma action
+this run must be the page-enumeration method in skill §10 (via `use_figma`, not
+`get_metadata`) — before touching any specific node, including any link on the ticket.
+
+If not required: proceed directly to the ticket's own frame(s) — no page-enumeration
+call at all.
+
 ## Reuses-dependency gate (spec-threshold)
 
 Before proceeding, check every ticket named in the Jira description's **Reuses** field: each one

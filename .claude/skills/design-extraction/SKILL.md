@@ -283,6 +283,18 @@ passed `download_assets` _call_ is not proof the export was actually read; the m
 (skill §14 gate 3) only checks that the call was made, never what its payload contained. Closing that gap
 is a methodology discipline (this rule), not something the mechanical gate can enforce.
 
+**A project-wide icon/glyph registry (`docs/icon-glyphs.md`) — created by whichever
+ticket first needs it, grown by every ticket after.** No single ticket owns this file.
+Before adding any icon glyph to a component, check whether `docs/icon-glyphs.md` already
+exists: if not, create it and seed it with this ticket's own found glyphs (verbatim
+geometry, node-id, in/out-of-scope classification) — same discipline as
+`docs/design-tokens.md`. If it already exists, dedup against it exactly as tokens are
+deduped (§4): an exact match reuses the existing entry; a genuinely new glyph is
+appended (never silently substituted for an existing entry); a near-duplicate becomes a
+design question, same as a near-match token. Every ticket that encounters an icon not
+yet in the registry is responsible for adding it there, not just consuming it locally
+within its own component.
+
 ## 10. Source coverage — exhaust the sources before flagging "unextractable / undefined"
 
 **Visual structure recognition — before any per-node extraction.** A component/style-guide file exists
@@ -310,7 +322,7 @@ a coverage inventory to the spec, in order:
 Points 3–8 apply to every ticket. The numbered list is the full menu; the scope above says which entries are load-bearing for the ticket at hand.
 
 1. **All pages** of the relevant Figma file, listed (skip only genuinely empty/service pages, and say so —
-   "skipped: empty" is part of the inventory, not a silent omission).
+   "skipped: empty" is part of the inventory, not a silent omission). **Retrieval method — `figma.root.children` via `use_figma`, not `get_metadata` with no `nodeId`.** The latter is confirmed unreliable: it returns whatever node is "currently selected" in the connector's own session state rather than a guaranteed full page list, once ANY node-specific call has already happened earlier in that session — a real incident showed it silently returning 2 pages of a genuinely 19-page (18 content pages + 1 divider) file, consistently, across four separate attempts. `figma.root.children` (a read-only Plugin-API snippet returning `{id, name}` for every top-level page) is state-independent and was independently verified to match the file's real page list exactly. If `use_figma` (or equivalent Plugin-API read access) is unavailable in the running context, STOP and report this as a tool-access gap (per §13's rate-limit-STOP precedent) — never fall back to `get_metadata`'s unscoped call as if it were equivalent.
 2. **All top-level nodes on each relevant page — of ALL types, not frames only** (frames, groups, sections,
    canvases), each with **type + name + size** recorded. Multiple same-named top-level nodes at the same
    level are COMMON (e.g. several page-root frames sharing a name) — enumerate and check ALL of them before
@@ -503,6 +515,24 @@ nothing to check against.
    this closes (three placed instances of one icon at 40%/100%/80% opacity, only one of
    which had ever been individually deep-read). Every flag is a prompt to check or to
    explicitly document the assumption, not proof of a defect by itself.
+
+   **Escalation to BLOCKING for a specific claim-shape:** the general sibling-group flag
+   above stays WARN-tier, but any claim that explicitly asserts a value/glyph has NO
+   variation across its placements (e.g. "single-tone", "plain", "no per-instance
+   override") is a stronger, narrower claim than a bare sibling grouping — verifying it
+   from only ONE individually-read instance is insufficient evidence for a universal
+   claim. This specific claim-shape is a **blocking** fail unless at least TWO
+   independently-read instances (or an explicit "only one instance exists" note) back it.
+
+7. **Page-inventory gate** (`validate-checkpoint-page-inventory.sh <draft-file>`) —
+   for tickets flagged as requiring document-wide coverage (per §10's coverage-scope
+   test): the orchestrator makes its OWN fresh `figma.root.children` call (never trusts
+   the analyst's self-reported page list) and diffs it against the draft's coverage-
+   inventory page list. Any live page absent from the draft's table is a **blocking**
+   fail, regardless of whether it plausibly contains new members — the point is
+   completeness of the LISTING, not a judgment call about relevance. Does not run for
+   single-component tickets (§10 already exempts them from document-wide coverage
+   entirely).
 
 **On any BLOCKING gate failing:** do not present the checkpoint yet. Re-verify each
 flagged item against the real source (never from memory), correct the draft, re-run the
