@@ -524,15 +524,17 @@ nothing to check against.
    claim. This specific claim-shape is a **blocking** fail unless at least TWO
    independently-read instances (or an explicit "only one instance exists" note) back it.
 
-7. **Page-inventory gate** (`validate-checkpoint-page-inventory.sh <draft-file>`) —
-   for tickets flagged as requiring document-wide coverage (per §10's coverage-scope
-   test): the orchestrator makes its OWN fresh `figma.root.children` call (never trusts
-   the analyst's self-reported page list) and diffs it against the draft's coverage-
-   inventory page list. Any live page absent from the draft's table is a **blocking**
-   fail, regardless of whether it plausibly contains new members — the point is
-   completeness of the LISTING, not a judgment call about relevance. Does not run for
-   single-component tickets (§10 already exempts them from document-wide coverage
-   entirely).
+7. **Page-inventory gate** (`validate-checkpoint-page-inventory.sh <live-pages-file>
+<draft-file>`) — for tickets flagged as requiring document-wide coverage (per §10's
+   coverage-scope test): immediately before running this gate, the orchestrator makes
+   its OWN fresh `figma.root.children` call (via `use_figma` — never trusts the
+   analyst's self-reported page list) and saves the raw JSON result to a scratch file
+   (e.g. `.claude/tmp/live-pages-<JIRA-KEY>.json`); the script then diffs every page
+   name in that file against the draft's coverage-inventory page list. Any live page
+   absent from the draft's table is a **blocking** fail, regardless of whether it
+   plausibly contains new members — the point is completeness of the LISTING, not a
+   judgment call about relevance. Does not run for single-component tickets (§10
+   already exempts them from document-wide coverage entirely).
 
 **On any BLOCKING gate failing:** do not present the checkpoint yet. Re-verify each
 flagged item against the real source (never from memory), correct the draft, re-run the

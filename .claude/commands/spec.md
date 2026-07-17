@@ -138,8 +138,13 @@ Have the analyst return its full draft spec text as that final message; the ORCH
 then writes it to a scratch draft file (e.g. `.claude/tmp/spec-draft-<JIRA-KEY>.md`)
 immediately after the Task returns.
 
-Once both files exist, the ORCHESTRATOR runs all six gates from skill §14 against them,
-exactly as `/baseline` does. Fix any BLOCKING failure per skill §14's guidance (re-verify
+Once both files exist, the ORCHESTRATOR runs all seven gates from skill §14 against
+them, exactly as `/baseline` does. For gate 7 specifically (only when the Coverage-scope
+decision above flagged this ticket as document-wide): before running it, call `use_figma`
+to get `figma.root.children` fresh (never reuse an earlier call's result, even from
+earlier in this same run) and save its raw JSON output to
+`.claude/tmp/live-pages-<JIRA-KEY>.json` — this is what gate 7 diffs the draft against.
+Fix any BLOCKING failure per skill §14's guidance (re-verify
 against the real source, correct the draft, re-run) before presenting the spec for
 approval — gates 5 and 6's warn tiers do not block by themselves, but add the missing tag
 / resolve or document the flagged sibling group anyway. This
