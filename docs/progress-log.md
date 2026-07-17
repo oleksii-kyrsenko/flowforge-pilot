@@ -2,6 +2,8 @@
 
 Append at the top; same entry format as before; see the MAINTENANCE RULE in CLAUDE.md.
 
+- 2026-07-16 — **v3.96→v3.97, session 18: GLOBAL SET-PRIMITIVE search method (skill §10) now requires structural enumeration (every non-text leaf/instance/vector node within the asset class's size range, on every swept page, classified individually) instead of name-keyword matching — a keyword search is not exhaustive by construction, regardless of how many keywords are tried.** Origin: controller-caught defect in a real `/spec` run — a keyword-based sweep left real, structurally-present members unclassified. Run discarded; Ф5 stays 1/3, rerun pending on the fixed engine.
+
 - 2026-07-16 — **v3.95→v3.96, session 18: replaced the seconds-based done-only duration design with per-row HH:MM:SS deltas (against the PRECEDING row) plus a stage-total row after each stage's own done row plus a single whole-task-total row appended by /ship at the very end of the cycle.** Third column `total_duration` added; `clean_seconds`/`wait_seconds` renamed `clean_duration`/`wait_duration`. Supersedes v3.94→v3.95 in the same session. Engine edit → freeze-counter stays 0/3.
 
 - 2026-07-16 — **v3.94→v3.95, session 18: metrics.csv's `done` row now carries computed `clean_seconds`/`wait_seconds` directly (blank on start/pause/resume rows), computed by the command itself from its own already-written rows — no more manual arithmetic needed to see actual time spent per stage.** Header row updated; existing data rows untouched (INV-8). Origin: requested directly — raw timestamps alone required manual computation every time. Engine edit → freeze-counter stays 0/3.
