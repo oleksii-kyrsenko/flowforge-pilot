@@ -456,14 +456,14 @@ per-minute cap). This constrains HOW extraction work is executed, not what to ex
 
 ## 14. Mechanical verification gates (Bash-capable contexts only)
 
-These six gates mechanically check a checkpoint draft before it is presented to the
+These seven gates mechanically check a checkpoint draft before it is presented to the
 human. They require a raw tool-call transcript (built per the logging requirement below)
 and run wherever Bash is available — the `/baseline` orchestrator directly; for `/spec`,
 the ORCHESTRATOR runs them after the `analyst` subagent (which has no Bash) returns its
 draft — see the per-command wiring in each command file, which points here rather than
 restating the gate logic.
 
-**Raw-transcript logging (prerequisite for all six gates):** as `get_design_context` /
+**Raw-transcript logging (prerequisite for all seven gates):** as `get_design_context` /
 `download_assets` / `get_variable_defs` calls are made during extraction, append each raw
 tool response verbatim to a scratch transcript file — not a summary, the actual returned
 text. For `download_assets` specifically, the hook that builds this transcript
@@ -505,7 +505,9 @@ nothing to check against.
    defect this gate exists for is a controller-caught real incident, not a hypothetical
    (a claim of "svg-confirmed" for a parent node backed only by a call on its child).
 6. **Sibling-instance coverage gate** (`validate-checkpoint-sibling-coverage.sh
-<raw-transcript-file> <draft-file>`) — **WARN-tier only, never blocks.** Groups node-ids that share
+<raw-transcript-file> <draft-file>`) — **Two-tier: WARN by default
+   (the base coverage flag), with a BLOCK escalation for one specific claim-shape (see
+   below).** Groups node-ids that share
    the same `data-name="X"` in `get_design_context` output (placed instances of the same
    component) and flags any group where some members were never individually passed as
    `nodeId` to a `download_assets`/`get_variable_defs` call. Deliberately blunt: it cannot
@@ -549,12 +551,12 @@ is itself CORRECT. That remains human/tool-call verification.
 **A residual gap no gate can close, named honestly rather than forced into a mechanical
 answer:** a styled value that is never written down in ANY claim-shaped form — not
 cited, not tagged, folded into vague prose instead of its own citable line — cannot be
-caught by any of the six gates above, because a gate can only check text that was
+caught by any of the seven gates above, because a gate can only check text that was
 actually written; it has no ground truth for what SHOULD have been written. A real
 incident: an accordion Active-state border's true value (a gradient to transparent) was
 incidentally present in a transcript response the whole time, but got folded into a
 generic, untagged sentence instead of its own `[Verify-node:]`-backed claim — invisible
-to gate 5 because the sentence never looked like a verification claim at all. **"All six
+to gate 5 because the sentence never looked like a verification claim at all. **"All seven
 gates pass" must never be read as "every value was correctly extracted" or "every
 per-instance override was checked"** — it means the claims that were written down are
 internally consistent with the transcript, nothing more. Closing this specific residual
