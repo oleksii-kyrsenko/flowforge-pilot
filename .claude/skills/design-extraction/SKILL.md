@@ -243,12 +243,25 @@ mode (a controller-caught real incident, not a hypothetical): three placed insta
 icon, structurally identical, carried opacity 40% / 100% / 80% respectively — and the flattened
 `get_design_context` markup for the 100%-and-80% pair was textually IDENTICAL (neither instance showed an
 opacity utility class), so even diffing the flattened code between instances would not have surfaced the
-difference. Only an independent `download_assets`/`get_variable_defs` read per instance resolves this —
-the same "each state/node earns its own curl-and-read" rule above, now named explicitly for opacity and
-blend-mode so it is not read as color-only. Skill §14's gate 6 gives this a mechanical (WARN-tier) backstop:
-it flags any group of same-named placed instances where some were never individually deep-read — it cannot
-tell a state-varying group from a purely decorative repeat, so treat every flag as a prompt to check or to
-explicitly document the assumption, not as a defect by itself.
+difference.
+
+**How many instances this actually requires — gate 6's real floor, do not over-read beyond it.**
+An independent `download_assets`/`get_variable_defs` read is owed only for whichever instance(s)
+your spec text makes a claim about. If you assert a UNIVERSAL claim across placements
+("single-tone", "plain", "no per-instance override", "same value everywhere") — the canonical
+instance PLUS at least one corroborating instance (2 total) is the floor; skill §14 gate 6 blocks
+a universal claim backed by fewer than two, but reading a third, fourth, or every remaining
+sibling "just to be extra sure" is not additional rigor, it is the exact wall-clock cost this
+paragraph exists to avoid. If you are NOT asserting universality, no minimum re-read count applies
+at all — state plainly what the canonical instance showed and that the remaining instances were
+not independently re-verified; that honest caveat satisfies gate 6's WARN tier on its own, same as
+an explicit "only one instance exists" note does. The underlying caution is unchanged and does not
+weaken: never INFER a value across instances from a shared name or shared geometry alone — only
+read fewer instances when you are not claiming more than what was actually read. Skill §14's gate 6
+gives this a mechanical (WARN-tier) backstop: it flags any group of same-named placed instances
+where some were never individually deep-read — it cannot tell a state-varying group from a purely
+decorative repeat, so treat every flag as a prompt to check or to explicitly document the
+assumption, not as a defect by itself.
 
 **A child/descendant's export is not a substitute for calling the tool on the node itself.** The
 sibling-state trap above is sibling-to-sibling (Hover's confirmed value doesn't carry over to Press). A
@@ -453,6 +466,20 @@ per-minute cap). This constrains HOW extraction work is executed, not what to ex
   extracted before the limit hit and what is missing, flagged as a **tool-access gap, not
   a design absence** (§10 applies here too — a rate-limit STOP is not evidence a value
   doesn't exist). Never retry the same call in a loop hoping the limit clears mid-session.
+- **Default `excludeScreenshot: true` on `get_design_context`** when the call is for
+  structural/token/color extraction — the large majority of calls. The embedded screenshot
+  materially bloats the response and is not needed to read code/structure/color. Only omit
+  this flag (or make a deliberate `get_screenshot` call) for an actual visual-confirmation
+  step — the existing, narrower case already described in §10 point 1 ("get a full
+  screenshot of each relevant showcase frame and visually identify…"), or any other moment
+  you are genuinely looking at pixels rather than structure.
+- **Same-turn call batching does not provide a wall-clock benefit here — measured, not
+  assumed.** Issuing multiple independent tool calls together in one turn was tested
+  empirically (two 4-second probe calls issued in the same turn totaled ~10.6s wall-clock,
+  not the ~4–5s a concurrent execution would show) and confirmed to execute **sequentially**
+  in this environment, not concurrently. Do not batch calls in the hope of a speedup — there
+  isn't one to have; batch only when it genuinely simplifies bookkeeping, never for
+  parallelism.
 
 ## 14. Mechanical verification gates (Bash-capable contexts only)
 

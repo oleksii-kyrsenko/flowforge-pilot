@@ -67,6 +67,18 @@ supply the frame or confirm the ticket is intentionally non-UI. An honest non-UI
 (logic/hook, no UI content) proceeds normally: UI sections N/A with reasons, no Figma call,
 no invented tokens.
 
+## Self-check before returning (shift-left gate 3 — reduces round-trips, does not replace it)
+
+Before you return your final draft, re-scan your OWN tool-call history from this same pass:
+for every `get_design_context` response that contained a raster `<img>` reference (skill §9's
+wrong-tool signal), confirm you already called `download_assets` on that EXACT node-id
+somewhere in this same pass. If you have not, make that call now — before returning — rather
+than leaving the gap for the orchestrator's mechanical gate 3 to catch after the fact. A gap
+caught now costs one extra tool call; a gap caught later costs a second full subagent
+round-trip. This does not change what must be checked or relax any gate — gates 2/3/6/7
+(skill §14) are unchanged and remain the enforcement backstop regardless; this only moves the
+same check earlier so it more often passes on the first pass.
+
 ## Hard rules you must respect
 
 - Do not invent tokens — values come only from Figma; missing → ask (becomes a design question).
