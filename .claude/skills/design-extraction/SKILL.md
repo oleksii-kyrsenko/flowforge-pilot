@@ -341,7 +341,7 @@ a coverage inventory to the spec, in order:
 - **GLOBAL SET-PRIMITIVE `/spec` tickets (icons, and any primitive whose deliverable is a project-wide SET of assets rather than one visual component):** the deliverable is "every X in the project", so coverage is GLOBAL by nature — enumerate ALL pages of the file (point 1) and search EVERY page for every instance of the asset class (icons: every vector glyph at every call site), not only instances of names/sizes the ticket happens to enumerate. A ticket's own list of expected members (names, count, sizes) is a starting hint, never the coverage boundary — the inventory must state what the full-file search found, including members the ticket did not name. **Search method — structural enumeration, not name-keyword matching.** A keyword/name-pattern search over node names is not exhaustive by construction — a member whose name does not happen to match any anticipated keyword is invisible to it, regardless of how many keywords are tried. Enumerate EVERY non-text leaf node within the asset class's typical size range on every swept page — this explicitly includes vector/instance/boolean-operation nodes AND raster/image-fill nodes (a rectangle or frame with an image fill, not only SVG-shaped nodes) — and classify EACH one individually (in-scope member / out-of-scope / already-catalogued duplicate) — never filtered out before classification by whether its name matches an expected pattern, and never filtered out by node type either. A real incident: a raster icon-shaped asset was missed twice in the same file because a sweep's own stated method named only vector/instance/boolean-operation node types, silently excluding a structurally-present, correctly-sized raster leaf node from consideration entirely. The class is decided by the DELIVERABLE's nature (does the whole project consume this set?), not by the ticket's wording. For each found member, the per-instance disciplines of §9 (verbatim geometry, canonical instance, scaled-instance question) apply unchanged.
 - **SINGLE-COMPONENT / PRIMITIVE `/spec` tickets (one visual component — NOT a global set-primitive, see above):** the authoritative source for the component's variants/states is the design-system/library variant set (point 3); for its responsive behaviour, the component's OWN instances across the breakpoint frames the ticket references (point 4). A component's definition does NOT live in the document's other unrelated pages — a document-wide page enumeration (points 1–2) is NOT required and must not be performed for breadth's sake; read the component itself across its breakpoints instead. Do NOT assert a document-wide page count (e.g. "exactly N pages, none skipped") the ticket did not need and did not fully take — an unneeded, unverified completeness claim is itself a defect. An absence claim about the component's states is valid against point 3; an absence claim about its responsive layout is valid against point 4.
 
-Points 3–8 apply to every ticket. The numbered list is the full menu; the scope above says which entries are load-bearing for the ticket at hand.
+Points 3–10 apply to every ticket. The numbered list is the full menu; the scope above says which entries are load-bearing for the ticket at hand.
 
 1. **All pages** of the relevant Figma file, listed (skip only genuinely empty/service pages, and say so —
    "skipped: empty" is part of the inventory, not a silent omission). **Retrieval method — `figma.root.children` via `use_figma`, not `get_metadata` with no `nodeId`.** The latter is confirmed unreliable: it returns whatever node is "currently selected" in the connector's own session state rather than a guaranteed full page list, once ANY node-specific call has already happened earlier in that session — a real incident showed it silently returning 2 pages of a genuinely 19-page (18 content pages + 1 divider) file, consistently, across four separate attempts. `figma.root.children` (a read-only Plugin-API snippet returning `{id, name}` for every top-level page) is state-independent and was independently verified to match the file's real page list exactly. If `use_figma` (or equivalent Plugin-API read access) is unavailable in the running context, STOP and report this as a tool-access gap (per §13's rate-limit-STOP precedent) — never fall back to `get_metadata`'s unscoped call as if it were equivalent.
@@ -364,14 +364,20 @@ Points 3–8 apply to every ticket. The numbered list is the full menu; the scop
 
    **Discovering an unlinked breakpoint sibling (single-component/primitive scope).** A primitive ticket's
    frame link often names only ONE viewport (e.g. desktop) — the ticket does not always link its own
-   mobile counterpart explicitly. Before concluding no mobile/breakpoint counterpart exists, enumerate the
-   TOP-LEVEL nodes on the SAME PAGE as the linked frame (`get_metadata` on that one page's id — not the
-   whole file, not every page) and check for another top-level frame sharing the same name/structural
-   pattern at a different width. This is a bounded, single-page check — it does NOT reopen the
-   document-wide, all-pages sweep §10's lead-in exempts single-component/primitive tickets from. Skipping
-   this bounded check is what let a real mobile HomePage frame, sitting beside the desktop HomePage frame
-   on the SAME page, go completely unswept in a live incident — the spec wrongly concluded "no mobile
-   breakpoint mockup exists" when one was one page-level sibling away.
+   mobile counterpart explicitly, and a project may keep its mobile mockups on a DIFFERENT page from the
+   desktop one. Before concluding no mobile/breakpoint counterpart exists: (a) enumerate the TOP-LEVEL
+   nodes on the SAME PAGE as the linked frame; (b) if no narrower-width match is found there, also
+   enumerate the TOP-LEVEL nodes of every OTHER page in the same file (a bounded, page-list-only pass —
+   `get_metadata` per page — not a full per-node document sweep). On both passes, a candidate qualifies by
+   STRUCTURAL/ROLE match (the same composition of atomic elements — see point 9's atomic-identity rule) at
+   a MEANINGFULLY NARROWER WIDTH than the ticket's own frame — never by name equality alone, and never
+   accept a same-width, differently-numbered duplicate node as satisfying this check (a duplicate at the
+   SAME width is a copy, not a breakpoint sibling). This is still a bounded check (page-list + top-level
+   nodes only, no full per-node recursion into every page) — it does NOT reopen the document-wide,
+   all-pages sweep §10's lead-in exempts single-component/primitive tickets from. Skipping this bounded
+   check, or accepting a same-width duplicate as sufficient, is what let a real mobile HomePage frame go
+   completely unswept in a live incident — the spec wrongly concluded "no mobile breakpoint mockup exists"
+   when one was reachable via this exact check.
 
 5. **The right tool for the node type** (§9): a raster `get_design_context` result on a vector →
    `download_assets svg`; an empty `get_variable_defs` is not proof of absence.
@@ -419,20 +425,41 @@ Points 3–8 apply to every ticket. The numbered list is the full menu; the scop
    a coverage REGRESSION, not evidence the element stopped existing — cross-check the current run's
    decorative-vector coverage against any prior approved checkpoint for the same file before concluding
    an element is out of scope.
-9. **Decorative-element independence — recognize a separable primitive, don't fold it into one consumer.**
+9. **Atomic element identity, independent of neighbors — the basis for decorative-element independence.**
+   Classify every visual element in the ticket's frame by its own intrinsic UI-primitive identity — what
+   it fundamentally IS (a heading, a button, a decorative divider/line, an icon, etc.) — considered in
+   isolation, never in relation to what happens to sit next to it. This classification does not depend on,
+   and must not be gated by, finding an instance where the element appears without its current neighbors;
+   composition with other primitives is a separate, later concern that has no bearing on whether the
+   element itself deserves independent identity.
+
+   **Decorative-element independence — recognize a separable primitive, don't fold it into one consumer.**
    When the SAME decorative sub-element (identical geometry/fill/blur) appears as a structural sibling of
-   the central content — not baked into the content node itself — repeated across ≥2 instances, treat it
-   as a candidate INDEPENDENT reusable primitive by default, and propose decomposing the component
-   accordingly (e.g. a content-agnostic Divider composed alongside whatever central content each usage
-   needs), rather than bundling the decorative element into one consumer-specific component. This holds
-   even when every observed instance flanks the SAME type of content (e.g. only ever seen next to a
-   title) — repetition across ≥2 structurally-separate instances is sufficient on its own. Observing the
-   same decorative element flanking DIFFERENT types of central content (e.g. a title in one place, a
-   button in another) is a stronger, additional confirmation of the same conclusion, not a separate or
-   higher threshold — do not require content-type variation before applying this rule. A real incident: a
-   fading divider line was found flanking a heading in 3 places and a CTA button in a 4th; the correct read
-   was "independent Divider primitive, composed differently per consumer," not "one heading component that
-   some sections haven't adopted yet."
+   the central content — not baked into the content node itself — repeated across ≥2 instances, it IS a
+   candidate independent reusable primitive (e.g. a content-agnostic Divider composed alongside whatever
+   central content each usage needs). Decomposing it out is the DEFAULT for the CURRENT ticket, not a
+   proposal deferred to a future ticket — implement the independent primitive now, unless the Reuse check
+   finds a specific documented reason not to. This holds even when every observed instance flanks the SAME
+   type of content — repetition across ≥2 structurally-separate instances is sufficient on its own.
+   Observing it flanking DIFFERENT types of central content is additional confirmation, not a higher
+   threshold. A real incident: a fading divider line was found flanking a heading in 3 places and a CTA
+   button in a 4th; the correct read was "independent Divider primitive, composed differently per
+   consumer," not "one heading component that some sections haven't adopted yet."
+
+   **Co-occurrence is not evidence against separability.** That two elements appear together in 100% of
+   currently observed instances does not make them one component — per the atomic-identity rule above,
+   each retains its own identity regardless of how consistently it happens to co-occur with another. Do
+   not create a context-specific variant of a decorative primitive (e.g. a "TitleDivider" or "CTADivider")
+   where a single, content-agnostic primitive (`Divider`) composed alongside whatever the consumer needs
+   already covers every case.
+
+10. **Layout-divergence reconciliation before raising a design question.** When two or more instances of
+    the same pattern appear to use different layouts, do not raise a design question until checking
+    whether the divergence is already explained by (a) decomposing the pattern into its atomic primitives
+    per point 9 and composing them differently per consumer, and/or (b) a breakpoint difference per point 4
+    / §12. A divergence that resolves once primitives are decomposed and breakpoints are accounted for is
+    not a design ambiguity — it is separate compositions of the same atoms, and needs no design question.
+    Raise a design question only for what remains genuinely unexplained after this reconciliation.
 
 **Only against this attached inventory** does an absence claim become valid. A FALSE "unextractable /
 undefined" — one that exhausting these sources would have resolved — is an extraction defect; an absence
