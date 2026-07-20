@@ -364,14 +364,20 @@ Points 3–8 apply to every ticket. The numbered list is the full menu; the scop
 
    **Discovering an unlinked breakpoint sibling (single-component/primitive scope).** A primitive ticket's
    frame link often names only ONE viewport (e.g. desktop) — the ticket does not always link its own
-   mobile counterpart explicitly. Before concluding no mobile/breakpoint counterpart exists, enumerate the
-   TOP-LEVEL nodes on the SAME PAGE as the linked frame (`get_metadata` on that one page's id — not the
-   whole file, not every page) and check for another top-level frame sharing the same name/structural
-   pattern at a different width. This is a bounded, single-page check — it does NOT reopen the
-   document-wide, all-pages sweep §10's lead-in exempts single-component/primitive tickets from. Skipping
-   this bounded check is what let a real mobile HomePage frame, sitting beside the desktop HomePage frame
-   on the SAME page, go completely unswept in a live incident — the spec wrongly concluded "no mobile
-   breakpoint mockup exists" when one was one page-level sibling away.
+   mobile counterpart explicitly, and a project may keep its mobile mockups on a DIFFERENT page from the
+   desktop one. Before concluding no mobile/breakpoint counterpart exists: (a) enumerate the TOP-LEVEL
+   nodes on the SAME PAGE as the linked frame; (b) if no narrower-width match is found there, also
+   enumerate the TOP-LEVEL nodes of every OTHER page in the same file (a bounded, page-list-only pass —
+   `get_metadata` per page — not a full per-node document sweep). On both passes, a candidate qualifies by
+   STRUCTURAL/ROLE match (the same composition of atomic elements — see point 9's atomic-identity rule) at
+   a MEANINGFULLY NARROWER WIDTH than the ticket's own frame — never by name equality alone, and never
+   accept a same-width, differently-numbered duplicate node as satisfying this check (a duplicate at the
+   SAME width is a copy, not a breakpoint sibling). This is still a bounded check (page-list + top-level
+   nodes only, no full per-node recursion into every page) — it does NOT reopen the document-wide,
+   all-pages sweep §10's lead-in exempts single-component/primitive tickets from. Skipping this bounded
+   check, or accepting a same-width duplicate as sufficient, is what let a real mobile HomePage frame go
+   completely unswept in a live incident — the spec wrongly concluded "no mobile breakpoint mockup exists"
+   when one was reachable via this exact check.
 
 5. **The right tool for the node type** (§9): a raster `get_design_context` result on a vector →
    `download_assets svg`; an empty `get_variable_defs` is not proof of absence.
@@ -419,20 +425,41 @@ Points 3–8 apply to every ticket. The numbered list is the full menu; the scop
    a coverage REGRESSION, not evidence the element stopped existing — cross-check the current run's
    decorative-vector coverage against any prior approved checkpoint for the same file before concluding
    an element is out of scope.
-9. **Decorative-element independence — recognize a separable primitive, don't fold it into one consumer.**
+9. **Atomic element identity, independent of neighbors — the basis for decorative-element independence.**
+   Classify every visual element in the ticket's frame by its own intrinsic UI-primitive identity — what
+   it fundamentally IS (a heading, a button, a decorative divider/line, an icon, etc.) — considered in
+   isolation, never in relation to what happens to sit next to it. This classification does not depend on,
+   and must not be gated by, finding an instance where the element appears without its current neighbors;
+   composition with other primitives is a separate, later concern that has no bearing on whether the
+   element itself deserves independent identity.
+
+   **Decorative-element independence — recognize a separable primitive, don't fold it into one consumer.**
    When the SAME decorative sub-element (identical geometry/fill/blur) appears as a structural sibling of
-   the central content — not baked into the content node itself — repeated across ≥2 instances, treat it
-   as a candidate INDEPENDENT reusable primitive by default, and propose decomposing the component
-   accordingly (e.g. a content-agnostic Divider composed alongside whatever central content each usage
-   needs), rather than bundling the decorative element into one consumer-specific component. This holds
-   even when every observed instance flanks the SAME type of content (e.g. only ever seen next to a
-   title) — repetition across ≥2 structurally-separate instances is sufficient on its own. Observing the
-   same decorative element flanking DIFFERENT types of central content (e.g. a title in one place, a
-   button in another) is a stronger, additional confirmation of the same conclusion, not a separate or
-   higher threshold — do not require content-type variation before applying this rule. A real incident: a
-   fading divider line was found flanking a heading in 3 places and a CTA button in a 4th; the correct read
-   was "independent Divider primitive, composed differently per consumer," not "one heading component that
-   some sections haven't adopted yet."
+   the central content — not baked into the content node itself — repeated across ≥2 instances, it IS a
+   candidate independent reusable primitive (e.g. a content-agnostic Divider composed alongside whatever
+   central content each usage needs). Decomposing it out is the DEFAULT for the CURRENT ticket, not a
+   proposal deferred to a future ticket — implement the independent primitive now, unless the Reuse check
+   finds a specific documented reason not to. This holds even when every observed instance flanks the SAME
+   type of content — repetition across ≥2 structurally-separate instances is sufficient on its own.
+   Observing it flanking DIFFERENT types of central content is additional confirmation, not a higher
+   threshold. A real incident: a fading divider line was found flanking a heading in 3 places and a CTA
+   button in a 4th; the correct read was "independent Divider primitive, composed differently per
+   consumer," not "one heading component that some sections haven't adopted yet."
+
+   **Co-occurrence is not evidence against separability.** That two elements appear together in 100% of
+   currently observed instances does not make them one component — per the atomic-identity rule above,
+   each retains its own identity regardless of how consistently it happens to co-occur with another. Do
+   not create a context-specific variant of a decorative primitive (e.g. a "TitleDivider" or "CTADivider")
+   where a single, content-agnostic primitive (`Divider`) composed alongside whatever the consumer needs
+   already covers every case.
+
+10. **Layout-divergence reconciliation before raising a design question.** When two or more instances of
+    the same pattern appear to use different layouts, do not raise a design question until checking
+    whether the divergence is already explained by (a) decomposing the pattern into its atomic primitives
+    per point 9 and composing them differently per consumer, and/or (b) a breakpoint difference per point 4
+    / §12. A divergence that resolves once primitives are decomposed and breakpoints are accounted for is
+    not a design ambiguity — it is separate compositions of the same atoms, and needs no design question.
+    Raise a design question only for what remains genuinely unexplained after this reconciliation.
 
 **Only against this attached inventory** does an absence claim become valid. A FALSE "unextractable /
 undefined" — one that exhausting these sources would have resolved — is an extraction defect; an absence
