@@ -540,9 +540,11 @@ nothing to check against.
 
 **On any BLOCKING gate failing:** do not present the checkpoint yet. Re-verify each
 flagged item against the real source (never from memory), correct the draft, re-run the
-gate until it passes. Gate 5's warn tier and gate 6 do not block the checkpoint by
-themselves — treat gate 5's warns as a prompt to add the missing tag, and gate 6's warns
-as a prompt to check or document, before presenting; neither is a hard stop. **Scope
+gate until it passes. Gate 5's warn tier and gate 6's WARN tier (the base sibling-coverage flag) do not block
+the checkpoint by themselves — treat gate 5's warns as a prompt to add the missing tag,
+and gate 6's coverage warns as a prompt to check or document, before presenting; neither
+is a hard stop. Gate 6's BLOCK escalation (a "no variation" claim backed by fewer than
+two individually-read instances) and gate 7 are hard stops, same as gates 1–4. **Scope
 boundary, honest:** these gates check MECHANICAL properties (citation present, value
 present, deeper tool called on the right node-id, tags internally consistent, sibling
 instances individually read) — none of them verify that a cited/tagged/extracted value
