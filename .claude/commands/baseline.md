@@ -42,16 +42,22 @@ design values. Methodology = the **design-extraction** skill. If that skill is m
   the model never chooses what gets written. **At the start of this command, before any
   Figma tool call, truncate that file** (`: > "$CLAUDE_PROJECT_DIR"/.claude/tmp/baseline-raw-transcript.txt`)
   so a prior run's entries never leak into this checkpoint's gate check. Pass this same
-  path to the six gates below as `<raw-transcript-file>`.
+  path to the seven gates below as `<raw-transcript-file>`.
 
 ## Mechanical verification gates (before presenting the checkpoint)
 
-Run all six gates defined in the design-extraction skill §14, in order (citation →
+Run all seven gates defined in the design-extraction skill §14, in order (citation →
 completeness → deep-read → near-match scoping → verify-node tag → sibling-instance
-coverage), against the draft file (and the raw transcript, for the gates that need it).
-Fix any BLOCKING failure per skill §14's guidance and re-run until all six pass (gates 5
-and 6's warn tiers do not block by themselves — add the missing tag / resolve or
-document the flagged sibling group before presenting), THEN present the checkpoint.
+coverage → page-inventory), against the draft file (and the raw transcript, for the
+gates that need it). For gate 7, per Figma source file swept this run: call `use_figma`
+to get `figma.root.children` fresh (via the method in skill §10 point 1) and save its
+raw JSON output to a scratch file (e.g. `.claude/tmp/live-pages-baseline-<n>.json`) —
+this is what gate 7 diffs that source's portion of the draft's coverage inventory
+against. Fix any BLOCKING failure per skill §14's guidance and re-run until all seven
+pass (gate 5's warn tier and gate 6's WARN tier — the base sibling-coverage flag — do
+not block by themselves; add the missing tag / resolve or document the flagged sibling
+group before presenting; gate 6's BLOCK escalation and gate 7 are hard stops, same as
+gates 1–4), THEN present the checkpoint.
 
 ## CHECKPOINT, then STOP
 

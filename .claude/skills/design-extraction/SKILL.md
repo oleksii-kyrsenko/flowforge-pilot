@@ -283,6 +283,18 @@ passed `download_assets` _call_ is not proof the export was actually read; the m
 (skill §14 gate 3) only checks that the call was made, never what its payload contained. Closing that gap
 is a methodology discipline (this rule), not something the mechanical gate can enforce.
 
+**A project-wide icon/glyph registry (`docs/icon-glyphs.md`) — created by whichever
+ticket first needs it, grown by every ticket after.** No single ticket owns this file.
+Before adding any icon glyph to a component, check whether `docs/icon-glyphs.md` already
+exists: if not, create it and seed it with this ticket's own found glyphs (verbatim
+geometry, node-id, in/out-of-scope classification) — same discipline as
+`docs/design-tokens.md`. If it already exists, dedup against it exactly as tokens are
+deduped (§4): an exact match reuses the existing entry; a genuinely new glyph is
+appended (never silently substituted for an existing entry); a near-duplicate becomes a
+design question, same as a near-match token. Every ticket that encounters an icon not
+yet in the registry is responsible for adding it there, not just consuming it locally
+within its own component.
+
 ## 10. Source coverage — exhaust the sources before flagging "unextractable / undefined"
 
 **Visual structure recognition — before any per-node extraction.** A component/style-guide file exists
@@ -310,7 +322,7 @@ a coverage inventory to the spec, in order:
 Points 3–8 apply to every ticket. The numbered list is the full menu; the scope above says which entries are load-bearing for the ticket at hand.
 
 1. **All pages** of the relevant Figma file, listed (skip only genuinely empty/service pages, and say so —
-   "skipped: empty" is part of the inventory, not a silent omission).
+   "skipped: empty" is part of the inventory, not a silent omission). **Retrieval method — `figma.root.children` via `use_figma`, not `get_metadata` with no `nodeId`.** The latter is confirmed unreliable: it returns whatever node is "currently selected" in the connector's own session state rather than a guaranteed full page list, once ANY node-specific call has already happened earlier in that session — a real incident showed it silently returning 2 pages of a genuinely 19-page (18 content pages + 1 divider) file, consistently, across four separate attempts. `figma.root.children` (a read-only Plugin-API snippet returning `{id, name}` for every top-level page) is state-independent and was independently verified to match the file's real page list exactly. If `use_figma` (or equivalent Plugin-API read access) is unavailable in the running context, STOP and report this as a tool-access gap (per §13's rate-limit-STOP precedent) — never fall back to `get_metadata`'s unscoped call as if it were equivalent.
 2. **All top-level nodes on each relevant page — of ALL types, not frames only** (frames, groups, sections,
    canvases), each with **type + name + size** recorded. Multiple same-named top-level nodes at the same
    level are COMMON (e.g. several page-root frames sharing a name) — enumerate and check ALL of them before
@@ -444,14 +456,14 @@ per-minute cap). This constrains HOW extraction work is executed, not what to ex
 
 ## 14. Mechanical verification gates (Bash-capable contexts only)
 
-These six gates mechanically check a checkpoint draft before it is presented to the
+These seven gates mechanically check a checkpoint draft before it is presented to the
 human. They require a raw tool-call transcript (built per the logging requirement below)
 and run wherever Bash is available — the `/baseline` orchestrator directly; for `/spec`,
 the ORCHESTRATOR runs them after the `analyst` subagent (which has no Bash) returns its
 draft — see the per-command wiring in each command file, which points here rather than
 restating the gate logic.
 
-**Raw-transcript logging (prerequisite for all six gates):** as `get_design_context` /
+**Raw-transcript logging (prerequisite for all seven gates):** as `get_design_context` /
 `download_assets` / `get_variable_defs` calls are made during extraction, append each raw
 tool response verbatim to a scratch transcript file — not a summary, the actual returned
 text. For `download_assets` specifically, the hook that builds this transcript
@@ -493,7 +505,9 @@ nothing to check against.
    defect this gate exists for is a controller-caught real incident, not a hypothetical
    (a claim of "svg-confirmed" for a parent node backed only by a call on its child).
 6. **Sibling-instance coverage gate** (`validate-checkpoint-sibling-coverage.sh
-<raw-transcript-file>`) — **WARN-tier only, never blocks.** Groups node-ids that share
+<raw-transcript-file> <draft-file>`) — **Two-tier: WARN by default
+   (the base coverage flag), with a BLOCK escalation for one specific claim-shape (see
+   below).** Groups node-ids that share
    the same `data-name="X"` in `get_design_context` output (placed instances of the same
    component) and flags any group where some members were never individually passed as
    `nodeId` to a `download_assets`/`get_variable_defs` call. Deliberately blunt: it cannot
@@ -504,11 +518,33 @@ nothing to check against.
    which had ever been individually deep-read). Every flag is a prompt to check or to
    explicitly document the assumption, not proof of a defect by itself.
 
+   **Escalation to BLOCKING for a specific claim-shape:** the general sibling-group flag
+   above stays WARN-tier, but any claim that explicitly asserts a value/glyph has NO
+   variation across its placements (e.g. "single-tone", "plain", "no per-instance
+   override") is a stronger, narrower claim than a bare sibling grouping — verifying it
+   from only ONE individually-read instance is insufficient evidence for a universal
+   claim. This specific claim-shape is a **blocking** fail unless at least TWO
+   independently-read instances (or an explicit "only one instance exists" note) back it.
+
+7. **Page-inventory gate** (`validate-checkpoint-page-inventory.sh <live-pages-file>
+<draft-file>`) — for tickets flagged as requiring document-wide coverage (per §10's
+   coverage-scope test): immediately before running this gate, the orchestrator makes
+   its OWN fresh `figma.root.children` call (via `use_figma` — never trusts the
+   analyst's self-reported page list) and saves the raw JSON result to a scratch file
+   (e.g. `.claude/tmp/live-pages-<JIRA-KEY>.json`); the script then diffs every page
+   name in that file against the draft's coverage-inventory page list. Any live page
+   absent from the draft's table is a **blocking** fail, regardless of whether it
+   plausibly contains new members — the point is completeness of the LISTING, not a
+   judgment call about relevance. Does not run for single-component tickets (§10
+   already exempts them from document-wide coverage entirely).
+
 **On any BLOCKING gate failing:** do not present the checkpoint yet. Re-verify each
 flagged item against the real source (never from memory), correct the draft, re-run the
-gate until it passes. Gate 5's warn tier and gate 6 do not block the checkpoint by
-themselves — treat gate 5's warns as a prompt to add the missing tag, and gate 6's warns
-as a prompt to check or document, before presenting; neither is a hard stop. **Scope
+gate until it passes. Gate 5's warn tier and gate 6's WARN tier (the base sibling-coverage flag) do not block
+the checkpoint by themselves — treat gate 5's warns as a prompt to add the missing tag,
+and gate 6's coverage warns as a prompt to check or document, before presenting; neither
+is a hard stop. Gate 6's BLOCK escalation (a "no variation" claim backed by fewer than
+two individually-read instances) and gate 7 are hard stops, same as gates 1–4. **Scope
 boundary, honest:** these gates check MECHANICAL properties (citation present, value
 present, deeper tool called on the right node-id, tags internally consistent, sibling
 instances individually read) — none of them verify that a cited/tagged/extracted value
@@ -517,12 +553,12 @@ is itself CORRECT. That remains human/tool-call verification.
 **A residual gap no gate can close, named honestly rather than forced into a mechanical
 answer:** a styled value that is never written down in ANY claim-shaped form — not
 cited, not tagged, folded into vague prose instead of its own citable line — cannot be
-caught by any of the six gates above, because a gate can only check text that was
+caught by any of the seven gates above, because a gate can only check text that was
 actually written; it has no ground truth for what SHOULD have been written. A real
 incident: an accordion Active-state border's true value (a gradient to transparent) was
 incidentally present in a transcript response the whole time, but got folded into a
 generic, untagged sentence instead of its own `[Verify-node:]`-backed claim — invisible
-to gate 5 because the sentence never looked like a verification claim at all. **"All six
+to gate 5 because the sentence never looked like a verification claim at all. **"All seven
 gates pass" must never be read as "every value was correctly extracted" or "every
 per-instance override was checked"** — it means the claims that were written down are
 internally consistent with the transcript, nothing more. Closing this specific residual
