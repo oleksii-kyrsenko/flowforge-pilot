@@ -1,1 +1,6 @@
 ticket,stage,event,timestamp_iso,clean_duration,wait_duration,total_duration
+FF-9,spec,start,2026-07-20T05:23:09Z,,,
+FF-9,spec,pause,2026-07-20T06:01:29Z,00:38:20,,
+FF-9,spec,resume,2026-07-20T07:26:09Z,,01:24:40,
+FF-9,spec,done,2026-07-20T07:27:06Z,00:00:57,,
+FF-9,spec,total,2026-07-20T07:27:06Z,,,02:03:57
